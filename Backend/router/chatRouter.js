@@ -1,5 +1,5 @@
 import express from 'express'
-import AgentChat from '../controllers/AgentChat.js'
+import AgentChat from '../controllers/AgentChatQ.js'
 
 const router = express.Router()
 

@@ -1,9 +1,16 @@
 import express from "express";
-import userjs from "../controllers/UserCon.js"; // ✅ FIXED PATH
+import {
+  sendOTP,
+  verifyOTP,
+  addUser,
+  signup
+} from "../controllers/UserCon.js";
 
 const router = express.Router();
 
-router.post("/signup", userjs.addUser);
-router.post("/login", userjs.signup); // ✅ FIXED METHOD NAME
+router.post("/send-otp", sendOTP);
+router.post("/verify-otp", verifyOTP);
+router.post("/register", addUser);
+router.post("/login", signup);
 
 export default router;
