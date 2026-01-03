@@ -129,6 +129,113 @@ Registers a new user **after successful OTP verification**.
 
 ---
 
+## 4️⃣ Forgot Password (OTP Based)
+
+This flow allows users to **reset their password using OTP verification**.
+
+---
+
+### 4.1️⃣ Send OTP for Password Reset
+
+#### 📍 Endpoint
+
+```
+POST /api/user/send-otpFor
+```
+
+#### 📝 Description
+
+Sends a **4-digit OTP** to the registered mobile number for password reset.
+
+#### 📥 Request Body
+
+```json
+{
+  "mobile": 9123456780
+}
+```
+
+#### 📤 Response
+
+```json
+{
+  "message": "OTP sent successfully for password reset"
+}
+```
+
+---
+
+### 4.2️⃣ Verify OTP for Password Reset
+
+#### 📍 Endpoint
+
+```
+POST /api/user/verify-otpfor
+```
+
+#### 📝 Description
+
+Verifies the OTP sent for password reset.
+
+#### 📥 Request Body
+
+```json
+{
+  "mobile": 9123456780,
+  "otp": "5508"
+}
+```
+
+#### 📤 Response
+
+**Success**
+```json
+{
+  "message": "OTP verified successfully"
+}
+```
+
+**Failure**
+```json
+{
+  "message": "Invalid or expired OTP"
+}
+```
+
+---
+
+### 4.3️⃣ Reset Password
+
+#### 📍 Endpoint
+
+```
+POST /api/user/restepass
+```
+
+#### 📝 Description
+
+Resets the user's password after successful OTP verification.
+
+#### 📥 Request Body
+
+```json
+{
+  "gmail": "aniruddha.saraf@example.com",
+  "password": "SecurePass@456dgfybd",
+  "Repassword": "SecurePass@456dgfybd"
+}
+```
+
+#### 📤 Response
+
+```json
+{
+  "message": "Password reset successfully"
+}
+```
+
+---
+
 ## 🔐 Authentication Flow
 
 1. User enters mobile number
