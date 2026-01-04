@@ -30,10 +30,10 @@ app.use(cors({
 app.use(cookieParser());
 app.use(express.json());
 
-/* 🔓 PUBLIC ROUTES (NO TOKEN REQUIRED) */
+/*  PUBLIC ROUTES (NO TOKEN REQUIRED) */
 app.use("/api/user", userRouter);
 
-/* 🔐 PROTECTED ROUTES (TOKEN REQUIRED) */
+/*  PROTECTED ROUTES (TOKEN REQUIRED) */
 app.use("/api/topic", authMiddleware, TopicControl);
 app.use("/api/agentChat", authMiddleware, chatRouter);
 app.use("/api/record", authMiddleware, RecordRouter);

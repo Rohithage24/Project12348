@@ -14,7 +14,8 @@ const authMiddleware = async (req, res, next) => {
         
     // ✅ Verify token
     const decoded = await auth.verifyToken(token);
-
+     console.log(decoded);
+     
     // Attach user to request
     req.user = decoded;
 
@@ -23,7 +24,7 @@ const authMiddleware = async (req, res, next) => {
       httpOnly: true,
       sameSite: "lax",
       secure: false, // true in production
-      maxAge: 7 * 24*60 * 60 * 1000
+      maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
     next();
