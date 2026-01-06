@@ -65,6 +65,7 @@ const LoginForm = ({ onClose }) => {
                 placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
+                
                 required
               />
               <button type="submit" className="modal-button">Login</button>
