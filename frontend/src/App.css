@@ -39,26 +39,42 @@
 
 
 /* Interview */
-
-.interbox{
+.interbox {
   background-color: blueviolet;
   height: 900px;
   display: flex;
   justify-content: space-between;
- 
-
 }
 
-.voice{
+.voice {
   height: 400px;
 }
 
-.agint{
+.agint {
   height: 450px;
 }
 
 
-/* footer */
-.footer-higth{
-  height: 300px;
+/* Footer */
+.footer-higth {
+  width: 100%;
+  background: linear-gradient(to right, #1e3c72, #2a5298);
+  color: #fff;
+  margin-top: auto; /* pushes footer to bottom */
+}
+
+/* Ensure app takes full height */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+main {
+  flex: 1;
 }

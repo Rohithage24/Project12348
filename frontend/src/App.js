@@ -54,6 +54,8 @@ import EmotionDetection from "./components/EmotionDetection";
 import SpeakQuestions from "./components/Speck";
 import InterviewQA from "./components/InterviewQA";
 import Score from "./pages/Score";
+import History from "./pages/History";
+
 
 
 
@@ -84,6 +86,8 @@ const App = () => {
             <Route path="/Speck"  element={<SpeakQuestions />} />
             <Route path="/interview"  element={<InterviewQA />} />
             <Route path="/score"  element={<Score />} />
+            <Route path="/History/:id"  element={<History />} />
+
 
 
 
