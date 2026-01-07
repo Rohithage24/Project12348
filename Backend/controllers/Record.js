@@ -95,6 +95,8 @@ const record = async (req, res) => {
 
 const getUserTest = async (req, res) => {
    const _id = req.params.id;
+  //  console.log(_id);
+   
   try {
     const TestRecords = await TestRecord.find({userId : _id});
     return res.status(200).json(TestRecords);
@@ -111,6 +113,8 @@ const getTest = async (req, res) => {
    
   try {
     const TestRecords = await TestRecord.find({_id : _id});
+    // console.log(TestRecords);
+    
     return res.status(200).json(TestRecords);
   } catch (err) {
     console.error("Get Topics Error:", err);

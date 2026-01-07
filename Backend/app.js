@@ -24,9 +24,10 @@ const server = http.createServer(app);
 
 // Middlewares
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: "http://localhost:3000", // frontend URL
   credentials: true
 }));
+
 app.use(cookieParser());
 app.use(express.json());
 
@@ -34,10 +35,11 @@ app.use(express.json());
 app.use("/api/user", userRouter);
 
 /*  PROTECTED ROUTES (TOKEN REQUIRED) */
-app.use("/api/topic", authMiddleware, TopicControl);
+app.use("/api/topic", TopicControl);
 app.use("/api/agentChat", authMiddleware, chatRouter);
 app.use("/api/record", authMiddleware, RecordRouter);
-app.use("/api/question", authMiddleware, QuestionRou);
+// app.use("/api/question", authMiddleware, QuestionRou);
+app.use("/api/question", QuestionRou);
 
 /* LOGOUT */
 app.post("/api/logout", authMiddleware, logout);
