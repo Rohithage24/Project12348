@@ -21,7 +21,7 @@ const MidPage = () => {
   useEffect(() => {
     const fetchTopic = async () => {
       try {
-        const res = await fetch(`${process.env.REACT_APP_BACKEND}/topicone/${id}`);
+        const res = await fetch(`${process.env.REACT_APP_BACKEND}/api/topic/topicone/${id}`);
         const data = await res.json();
         setTopic(data);
       } catch (err) {
@@ -36,7 +36,7 @@ const MidPage = () => {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await fetch(`${process.env.REACT_APP_BACKEND}/textRecords/${auth.user._id}`);
+        const res = await fetch(`${process.env.REACT_APP_BACKEND}/api/record/textRecords/${auth.user._id}`);
         const data = await res.json();
         setHistory(data);
       } catch (err) {

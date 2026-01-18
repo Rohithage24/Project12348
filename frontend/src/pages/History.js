@@ -12,7 +12,8 @@ const History = () => {
   useEffect(() => {
     const fetchTopic = async () => {
       try {
-        const res = await fetch(`${process.env.REACT_APP_BACKEND}/gettext/${id}`);
+        const res = await fetch(`${process.env.REACT_APP_BACKEND}/api/topic/${id}`);
+
         const data = await res.json();
         setTest(data[0]);
       } catch (err) {

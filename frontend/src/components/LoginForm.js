@@ -18,26 +18,44 @@ const LoginForm = ({ onClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${process.env.REACT_APP_BACKEND}/login`, {
+      const res = await fetch("http://localhost:5000/api/user/login", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
-      const data = await res.json();
+      const data = await res.json(); // ✅ ONLY ONCE
 
-      if (data && data.user) {
-        setAuth({ ...auth, user: data.user, token: data.token });
-        localStorage.setItem("auth", JSON.stringify(data));
+      if (res.ok && data.user && data.token) {
+        // ✅ Update auth context
+        setAuth({
+          ...auth,
+          user: data.user,
+          token: data.token,
+        });
+
+        // ✅ Save clean auth object
+        localStorage.setItem(
+          "auth",
+          JSON.stringify({
+            user: data.user,
+            token: data.token,
+          })
+        );
+
         setMessage(data.message || "Login successful");
-        navigate("/");
+
         onClose && onClose();
+        navigate("/");
+      } else if (res.status === 401) {
+        setMessage(data.message || "Wrong email or password");
       } else {
         setMessage(data.message || "Login failed");
       }
     } catch (err) {
       console.error(err);
-      setMessage("Login error");
+      setMessage("Login error. Please try again.");
     }
   };
 
@@ -46,8 +64,11 @@ const LoginForm = ({ onClose }) => {
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         {!showSignup ? (
           <>
-            <button className="modal-close-btn" onClick={onClose}>✖</button>
+            <button className="modal-close-btn" onClick={onClose}>
+              ✖
+            </button>
             <h2 className="modal-heading">Login</h2>
+
             <form onSubmit={handleSubmit} className="modal-form">
               <input
                 type="email"
@@ -58,6 +79,7 @@ const LoginForm = ({ onClose }) => {
                 onChange={handleChange}
                 required
               />
+
               <input
                 type="password"
                 name="password"
@@ -65,16 +87,23 @@ const LoginForm = ({ onClose }) => {
                 placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
-                
                 required
               />
-              <button type="submit" className="modal-button">Login</button>
+
+              <button type="submit" className="modal-button">
+                Login
+              </button>
+
               <p className="modal-link-small">
                 Don’t have an account?{" "}
-                <span onClick={() => setShowSignup(true)} className="modal-link">
+                <span
+                  onClick={() => setShowSignup(true)}
+                  className="modal-link"
+                >
                   Sign up
                 </span>
               </p>
+
               {message && <div className="alert-info">{message}</div>}
             </form>
           </>
