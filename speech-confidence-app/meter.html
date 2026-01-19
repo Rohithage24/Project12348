@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Detailed Speech Report</title>
+
+    <style>
+        body {
+            background: #f0f2f5;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            width: 460px;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.05rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: 0.2s;
+        }
+
+        .btn-start {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-stop {
+            background: #dc3545;
+            color: white;
+            display: none;
+        }
+
+        .report-card {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .score-title {
+            text-align: center;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            color: #777;
+            margin-top: 10px;
+        }
+
+        .score-big {
+            text-align: center;
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 10px 0 20px;
+        }
+
+        .metric-row {
+            margin-bottom: 22px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            color: #444;
+        }
+
+        .bar-bg {
+            background: #e9ecef;
+            height: 8px;
+            border-radius: 4px;
+            margin: 8px 0;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 1s ease;
+        }
+
+        .feedback {
+            font-size: 0.9rem;
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>🎤 Speech Confidence Analyzer</h1>
+
+    <button id="startBtn" class="btn btn-start" onclick="startRecording()">Start Recording</button>
+    <button id="stopBtn" class="btn btn-stop" onclick="stopRecording()">Stop & Analyze</button>
+
+    <div id="report" class="report-card">
+
+        <div class="score-title">Overall Confidence</div>
+        <div id="mainScore" class="score-big">0%</div>
+
+        <div class="metric-row">
+            <div class="metric-header">
+                <span>Speaking Pace</span>
+                <span id="paceVal">0/100</span>
+            </div>
+            <div class="bar-bg">
+                <div id="paceBar" class="bar-fill" style="background:#17a2b8;"></div>
+            </div>
+            <div id="paceMsg" class="feedback">...</div>
+        </div>
+
+        <div class="metric-row">
+            <div class="metric-header">
+                <span>Voice Clarity</span>
+                <span id="clarityVal">0%</span>
+            </div>
+            <div class="bar-bg">
+                <div id="clarityBar" class="bar-fill" style="background:#6610f2;"></div>
+            </div>
+            <div id="clarityMsg" class="feedback">...</div>
+        </div>
+
+        <div class="metric-row">
+            <div class="metric-header">
+                <span>Tone Variety</span>
+                <span id="toneVal">0/100</span>
+            </div>
+            <div class="bar-bg">
+                <div id="toneBar" class="bar-fill" style="background:#fd7e14;"></div>
+            </div>
+            <div id="toneMsg" class="feedback">...</div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    let mediaRecorder;
+    let chunks = [];
+
+    async function startRecording() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            chunks = [];
+
+            document.getElementById("startBtn").style.display = "none";
+            document.getElementById("stopBtn").style.display = "block";
+            document.getElementById("report").style.display = "none";
+
+            mediaRecorder.ondataavailable = e => chunks.push(e.data);
+            mediaRecorder.onstop = sendAudio;
+            mediaRecorder.start();
+
+        } catch (err) {
+            alert("Microphone permission required!");
+        }
+    }
+
+    function stopRecording() {
+        mediaRecorder.stop();
+
+        document.getElementById("startBtn").style.display = "block";
+        document.getElementById("stopBtn").style.display = "none";
+        document.getElementById("startBtn").innerText = "Analyzing...";
+        document.getElementById("startBtn").disabled = true;
+    }
+
+    async function sendAudio() {
+        const blob = new Blob(chunks, { type: "audio/webm" });
+        const formData = new FormData();
+        formData.append("file", blob, "speech.webm");
+
+        try {
+            const res = await fetch("http://127.0.0.1:8000/analyze-full-speech", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await res.json();
+            console.log(data);
+            
+            showReport(data);
+
+        } catch (e) {
+            alert("Server error. Is FastAPI running?");
+        }
+
+        document.getElementById("startBtn").innerText = "Record Again";
+        document.getElementById("startBtn").disabled = false;
+    }
+
+    function showReport(data) {
+        document.getElementById("report").style.display = "block";
+
+        document.getElementById("mainScore").innerText = data.overall_score + "%";
+        document.getElementById("mainScore").style.color =
+            data.overall_score >= 70 ? "#28a745" : "#dc3545";
+
+        document.getElementById("paceVal").innerText = data.pace_score + "/100";
+        document.getElementById("paceBar").style.width = data.pace_score + "%";
+        document.getElementById("paceMsg").innerText = data.pace_feedback;
+
+        document.getElementById("clarityVal").innerText = data.clarity_score + "%";
+        document.getElementById("clarityBar").style.width = data.clarity_score + "%";
+        document.getElementById("clarityMsg").innerText = data.clarity_feedback;
+
+        document.getElementById("toneVal").innerText = data.tone_score + "/100";
+        document.getElementById("toneBar").style.width = data.tone_score + "%";
+        document.getElementById("toneMsg").innerText = data.tone_feedback;
+    }
+</script>
+
+</body>
+</html>
+
+
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Detailed Speech Report</title>
+    <style>
+        body { background: #f0f2f5; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: white; width: 450px; padding: 30px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #333; }
+        
+        .btn { width: 100%; padding: 15px; font-size: 1.1rem; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 20px; transition: 0.2s; }
+        .btn-start { background: #007bff; color: white; }
+        .btn-stop { background: #dc3545; color: white; display: none; }
+        
+        .report-card { display: none; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .metric-row { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .metric-header { display: flex; justify-content: space-between; font-weight: bold; color: #444; }
+        .bar-bg { background: #e9ecef; height: 8px; border-radius: 4px; margin: 8px 0; overflow: hidden; }
+        .bar-fill { height: 100%; width: 0%; transition: width 1s ease; }
+        .feedback { font-size: 0.9rem; color: #666; font-style: italic; }
+
+        .score-big { text-align: center; font-size: 3rem; font-weight: bold; color: #28a745; margin: 10px 0; }
+        .score-title { text-align: center; color: #888; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📝 Speech Analysis</h1>
+    
+    <button id="startBtn" class="btn btn-start" onclick="startRecording()">Start Recording</button>
+    <button id="stopBtn" class="btn btn-stop" onclick="stopRecording()">Stop & Analyze</button>
+
+    <div id="report" class="report-card">
+        <div class="score-title">Overall Confidence</div>
+        <div id="mainScore" class="score-big">0%</div>
+
+        <div class="metric-row">
+            <div class="metric-header"><span>Speaking Pace</span> <span id="paceVal">0</span></div>
+            <div class="bar-bg"><div id="paceBar" class="bar-fill" style="background: #17a2b8;"></div></div>
+            <div id="paceMsg" class="feedback">...</div>
+        </div>
+
+        <div class="metric-row">
+            <div class="metric-header"><span>Voice Clarity</span> <span id="clarityVal">0%</span></div>
+            <div class="bar-bg"><div id="clarityBar" class="bar-fill" style="background: #6610f2;"></div></div>
+            <div id="clarityMsg" class="feedback">...</div>
+        </div>
+
+        <div class="metric-row">
+            <div class="metric-header"><span>Tone Variety</span> <span id="toneVal">0</span></div>
+            <div class="bar-bg"><div id="toneBar" class="bar-fill" style="background: #fd7e14;"></div></div>
+            <div id="toneMsg" class="feedback">...</div>
+        </div>
+        
+    </div>
+</div>
+
+<script>
+    let mediaRecorder;
+    let chunks = [];
+
+    async function startRecording() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            chunks = [];
+            
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('stopBtn').style.display = 'block';
+            document.getElementById('report').style.display = 'none';
+
+            mediaRecorder.ondataavailable = e => chunks.push(e.data);
+            mediaRecorder.onstop = sendAudio;
+            mediaRecorder.start();
+            
+        } catch (e) { alert("Mic required!"); }
+    }
+
+    function stopRecording() {
+        mediaRecorder.stop();
+        document.getElementById('startBtn').style.display = 'block';
+        document.getElementById('stopBtn').style.display = 'none';
+        document.getElementById('startBtn').innerText = "Analyzing...";
+        document.getElementById('startBtn').disabled = true;
+    }
+
+    async function sendAudio() {
+        const blob = new Blob(chunks, { type: 'audio/webm' });
+        const formData = new FormData();
+        formData.append("file", blob, "speech.webm");
+
+        try {
+            const res = await fetch("http://127.0.0.1:8000/analyze-full-speech", { method: "POST", body: formData });
+            const data = await res.json();
+            showReport(data);
+        } catch (e) { alert("Server Error"); }
+        
+        document.getElementById('startBtn').innerText = "Record Again";
+        document.getElementById('startBtn').disabled = false;
+    }
+
+    function showReport(data) {
+        document.getElementById('report').style.display = 'block';
+        
+        // Main Score
+        document.getElementById('mainScore').innerText = data.overall_score + "%";
+        document.getElementById('mainScore').style.color = data.overall_score > 70 ? "#28a745" : "#dc3545";
+
+        // Pace
+        document.getElementById('paceVal').innerText = data.pace_score + "/100";
+        document.getElementById('paceBar').style.width = Math.min(data.pace_score, 100) + "%";
+        document.getElementById('paceMsg').innerText = data.pace_feedback;
+
+        // Clarity
+        document.getElementById('clarityVal').innerText = data.clarity_score + "%";
+        document.getElementById('clarityBar').style.width = data.clarity_score + "%";
+        document.getElementById('clarityMsg').innerText = data.clarity_feedback;
+
+        // Tone
+        document.getElementById('toneVal').innerText = data.tone_score + "/100";
+        document.getElementById('toneBar').style.width = Math.min(data.tone_score, 100) + "%";
+        document.getElementById('toneMsg').innerText = data.tone_feedback;
+    }
+</script>
+</body>
+</html> -->
