@@ -1,41 +1,61 @@
-// src/pages/Home.js
-
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Lottie from 'lottie-react';
-import developerAnimation from '../assets/developer-boy.json';
-import LoginForm from '../components/LoginForm';
-import SignupForm from '../components/SignupForm';
-import InterviewRoadmap from '../components/InterviewRoadmap';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Lottie from "lottie-react";
+import developerAnimation from "../assets/developer-boy.json";
+import LoginForm from "../components/LoginForm";
+import SignupForm from "../components/SignupForm";
+import InterviewRoadmap from "../components/InterviewRoadmap";
+import { authFetch } from "../utils/api";
+import { useAuth } from "../context/AuthProvider";
 
 const Home = () => {
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
   const [topics, setTopics] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const [auth] = useAuth();
   const navigate = useNavigate();
 
-  // Fetch topics from backend
+  // 🔹 Fetch topics (PUBLIC – no login required)
   useEffect(() => {
     const fetchTopics = async () => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_BACKEND}/topicget`);
-        const data = await response.json();
-        setTopics(data);
+        const { status, data } = await authFetch(
+          `${process.env.REACT_APP_BACKEND}/api/topic/topicget`
+        );
+
+        if (status === 200 && Array.isArray(data)) {
+          setTopics(data);
+        } else {
+          console.error("Unexpected response:", data);
+        }
       } catch (error) {
         console.error("Failed to fetch topics:", error);
+      } finally {
+        setLoading(false);
       }
     };
+
     fetchTopics();
   }, []);
+
+  // 🔹 Handle topic click
+  const handleTopicClick = (id) => {
+    if (!auth?.token) {
+      setShowLogin(true);
+    } else {
+      navigate(`/midPage/${id}`);
+    }
+  };
 
   return (
     <>
       {/* Login Modal */}
       {showLogin && (
         <div className="modal-overlay" onClick={() => setShowLogin(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <LoginForm />
-            <button className="modal-close-btn" onClick={() => setShowLogin(false)}>Close</button>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <LoginForm onClose={() => setShowLogin(false)} />
           </div>
         </div>
       )}
@@ -43,35 +63,43 @@ const Home = () => {
       {/* Signup Modal */}
       {showSignup && (
         <div className="modal-overlay" onClick={() => setShowSignup(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <SignupForm />
-            <button className="modal-close-btn" onClick={() => setShowSignup(false)}>Close</button>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <SignupForm onClose={() => setShowSignup(false)} />
           </div>
         </div>
       )}
 
       {/* Hero Section */}
-      <section className="home-hero" id="home">
+      <section className="home-hero">
         <div className="hero-text">
           <h1>Free Mock Interview Topics</h1>
           <p>Practice. Get Confident. Get Hired.</p>
-          <button className="cta-btn" onClick={() => setShowSignup(true)}>Start Now for Free!</button>
+          <button className="cta-btn" onClick={() => setShowSignup(true)}>
+            Start Now for Free!
+          </button>
         </div>
+
         <div className="hero-animation">
-          <Lottie animationData={developerAnimation} style={{ height: 300, width: 300 }} />
+          <Lottie
+            animationData={developerAnimation}
+            style={{ height: 300 }}
+          />
         </div>
       </section>
 
       {/* Topics Section */}
-      <section className="topics-section" id="topics">
+      <section className="topics-section">
         <h2>Select a Topic</h2>
+
         <div className="topics-container">
-          {topics.length > 0 ? (
-            topics.map((topic, index) => (
+          {loading ? (
+            <p className="loading-text">Loading topics...</p>
+          ) : topics.length > 0 ? (
+            topics.map((topic) => (
               <div
-                key={index}
+                key={topic._id}
                 className="home-topic-card"
-                onClick={() => navigate(`/midPage/${topic._id}`)}
+                onClick={() => handleTopicClick(topic._id)}
               >
                 <div className="topic-emoji">{topic.emoji}</div>
                 <h3>{topic.title}</h3>
@@ -79,12 +107,12 @@ const Home = () => {
               </div>
             ))
           ) : (
-            <p className="loading-text">Loading topics...</p>
+            <p className="loading-text">No topics available</p>
           )}
         </div>
       </section>
 
-      {/* Interview Roadmap Component */}
+      {/* Interview Roadmap */}
       <InterviewRoadmap />
     </>
   );
