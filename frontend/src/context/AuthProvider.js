@@ -1,44 +1,38 @@
 import { useState, useContext, createContext, useEffect } from "react";
 
-// Create context
+// Create the AuthContext
 const AuthContext = createContext();
 
-// Provider
+// AuthProvider Component
 const AuthProvider = ({ children }) => {
-  const [auth, setAuth] = useState({
-    user: null,
-    token: "",
-  });
+    const [auth, setAuth] = useState({
+        user: null,
+        token: ""
+    });
 
-  // 🔹 Load auth from localStorage on first load
-  useEffect(() => {
-    const storedAuth = localStorage.getItem("auth");
-    if (storedAuth) {
-      const parsedAuth = JSON.parse(storedAuth);
-      setAuth({
-        user: parsedAuth.user || null,
-        token: parsedAuth.token || "",
-      });
-    }
-  }, []);
+    useEffect(()=>{
+        const Date = localStorage.getItem("auth")
+        
+        if(Date){
 
-  // 🔹 Sync auth to localStorage
-  useEffect(() => {
-    if (auth?.token) {
-      localStorage.setItem("auth", JSON.stringify(auth));
-    } else {
-      localStorage.removeItem("auth");
-    }
-  }, [auth]);
-
-  return (
-    <AuthContext.Provider value={[auth, setAuth]}>
-      {children}
-    </AuthContext.Provider>
-  );
+            const userDate = JSON.parse(Date)
+            setAuth({
+                ...auth,
+                user:userDate.user,
+                token: userDate.token
+            })
+        }
+        //eslint-disable-next-line
+    },[])
+    return (
+        <AuthContext.Provider value={[auth, setAuth]}>
+            {children}
+        </AuthContext.Provider>
+    );
 };
 
-// Custom hook
+// Custom hook to use AuthContext
 const useAuth = () => useContext(AuthContext);
 
+// Export the AuthProvider and useAuth
 export { AuthProvider, useAuth };

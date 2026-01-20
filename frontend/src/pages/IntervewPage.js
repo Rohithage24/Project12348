@@ -23,8 +23,10 @@ const IntervewPage = () => {
     const fetchTopic = async () => {
       try {
         const response = await fetch(
-          `${process.env.REACT_APP_BACKEND}/topicone/${id}`,
-          { method: "GET", headers: { "Content-Type": "application/json" } }
+          `${process.env.REACT_APP_BACKEND}/topic/topicone/${id}`,
+          { method: "GET", 
+             credentials: 'include',
+            headers: { "Content-Type": "application/json" } }
         );
         const data = await response.json();
         setTopic(data);

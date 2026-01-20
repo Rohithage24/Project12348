@@ -1,65 +1,87 @@
 // src/pages/History.js
-import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import Loading from "../components/Loading";
+import React, { useState, useEffect } from 'react'
+import { useParams } from 'react-router-dom'
+import Loading from '../components/Loading'
 
 const History = () => {
-  const { id } = useParams();
-  const [test, setTest] = useState(null);
-  const [loading, setLoading] = useState(true);
-  console.log(test);
+  const { id } = useParams()
+  const [test, setTest] = useState(null)
+  const [loading, setLoading] = useState(true)
+  console.log(test)
+console.log(id);
 
   useEffect(() => {
     const fetchTopic = async () => {
       try {
-        const res = await fetch(`${process.env.REACT_APP_BACKEND}/api/topic/${id}`);
-
-        const data = await res.json();
-        setTest(data[0]);
+        
+        const res = await fetch(`${process.env.REACT_APP_BACKEND}/record/gettext/${id}`, {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        const data = await res.json()
+        setTest(data[0])
       } catch (err) {
-        console.error(err);
+        console.error(err)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
-    fetchTopic();
-  }, [id]);
+    }
+    fetchTopic()
+  }, [id])
 
-  if (loading) return <div className="history-loading"><Loading /></div>;
-  if (!test) return <div className="history-error">No data found</div>;
+  if (loading)
+    return (
+      <div className='history-loading'>
+        <Loading />
+      </div>
+    )
+  if (!test) return <div className='history-error'>No data found</div>
 
-  const formattedDate = new Date(test.date).toLocaleString();
+  const formattedDate = new Date(test.date).toLocaleString()
 
   return (
-    <div className="history-container">
-      <h1 className="history-headline">{test.headline} - Test Review</h1>
+    <div className='history-container'>
+      <h1 className='history-headline'>{test.headline} - Test Review</h1>
 
-      <div className="history-metaBox">
-        <p><strong>Date:</strong> {formattedDate}</p>
-        <p><strong>Total Score:</strong> {test.score}</p>
+      <div className='history-metaBox'>
+        <p>
+          <strong>Date:</strong> {formattedDate}
+        </p>
+        <p>
+          <strong>Total Score:</strong> {test.score}
+        </p>
       </div>
 
-      <div className="history-questionsWrapper">
+      <div className='history-questionsWrapper'>
         {test.questions.map((q, index) => (
-          <div key={q._id || index} className="history-card">
-            <h3 className="history-questionTitle">
+          <div key={q._id || index} className='history-card'>
+            <h3 className='history-questionTitle'>
               Q{index + 1}. {q.questionText}
             </h3>
-            <p><strong>Your Answer:</strong></p>
-            <p className="history-answerText">{q.userAnswer}</p>
+            <p>
+              <strong>Your Answer:</strong>
+            </p>
+            <p className='history-answerText'>{q.userAnswer}</p>
 
-            <p><strong>Correct Answer:</strong></p>
-            <p className="history-correctText">{q.correctAnswer || "Not provided"}</p>
+            <p>
+              <strong>Correct Answer:</strong>
+            </p>
+            <p className='history-correctText'>
+              {q.correctAnswer || 'Not provided'}
+            </p>
 
-            <div className="history-scoreBox">
-              <span>Score: {q.QuesScore}</span> | 
+            <div className='history-scoreBox'>
+              <span>Score: {q.QuesScore}</span> |
               <span> Accuracy: {q.accuracy}%</span>
             </div>
           </div>
         ))}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default History;
+export default History

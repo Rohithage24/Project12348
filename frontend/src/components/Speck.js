@@ -10,6 +10,7 @@ export default function SpeakQuestions() {
       try {
         const response = await fetch(`${process.env.REACT_APP_BACKEND}/chat`, {
           method: "POST",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json"
           },

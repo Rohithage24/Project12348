@@ -1,37 +1,44 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
 import Loading from "./Loading";
 import { useAuth } from "../context/AuthProvider";
 import { useNavigate } from "react-router-dom";
 
 export default function InterviewQA({ topic }) {
-  const { transcript, listening, resetTranscript, browserSupportsSpeechRecognition } =
-    useSpeechRecognition();
-  const [auth , setAuth] = useAuth();
+  const {
+    transcript,
+    listening,
+    resetTranscript,
+    browserSupportsSpeechRecognition
+  } = useSpeechRecognition();
+
+  const [auth] = useAuth();
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [readyForAnswer, setReadyForAnswer] = useState(false);
+  const [confidenceScore, setConfidenceScore] = useState(null);
+
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+
   const navigate = useNavigate();
-  // console.log(auth);
-  
-  // Fetch questions from backend
+
+  /* ---------------- FETCH QUESTIONS ---------------- */
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_BACKEND}/chat`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            message: `give only question ${topic} interview Question now the number of question is 5 , Now the formate in json array fromate`
-          })
-        });
+        const response = await fetch(
+          "http://localhost:4000/api/question/questiona/React",
+          {
+            method: "GET",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" }
+          }
+        );
 
         const data = await response.json();
-        const cleanedJson = data.reply.replace(/```json|```/g, "").trim();
-        const parsedQuestions = JSON.parse(cleanedJson);
-
-        setQuestions(parsedQuestions);
+        setQuestions(data);
       } catch (error) {
         console.error("Error fetching questions:", error);
       }
@@ -40,61 +47,152 @@ export default function InterviewQA({ topic }) {
     fetchQuestions();
   }, [topic]);
 
-  // Speak current question
+  /* ---------------- SPEAK QUESTION + START RECORDING ---------------- */
   useEffect(() => {
-    if (questions.length === 0 || currentIndex >= questions.length) return;
+    if (
+      questions.length === 0 ||
+      currentIndex >= questions.length ||
+      !questions[currentIndex]?.questionText
+    ) return;
 
     SpeechRecognition.stopListening();
     resetTranscript();
 
-    const question = questions[currentIndex].question;
-    const utterance = new SpeechSynthesisUtterance(question);
-    utterance.rate = 1;
-    utterance.pitch = 1;
+    const utterance = new SpeechSynthesisUtterance(
+      questions[currentIndex].questionText
+    );
 
-    utterance.onend = () => {
+    utterance.onend = async () => {
       resetTranscript();
       setReadyForAnswer(true);
+
+      // 🎙️ Start audio recording
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+
+      mediaRecorderRef.current.ondataavailable = e => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+
+      mediaRecorderRef.current.start();
       SpeechRecognition.startListening({ continuous: true });
     };
 
     window.speechSynthesis.speak(utterance);
   }, [currentIndex, questions, resetTranscript]);
 
-  // Submit answer
-  const handleSubmit = async () => {
-    if (!transcript.trim()) return;
+  /* ---------------- SUBMIT ANSWER ---------------- */
+const handleSubmit = async () => {
+  if (!transcript.trim()) return;
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      const payload = {
-        userId : auth.user._id,
-        question: questions[currentIndex].question,
-        answer: transcript.trim()
+    SpeechRecognition.stopListening();
+
+    // ✅ WAIT for recorder to stop properly
+    const audioBlob = await new Promise((resolve, reject) => {
+      if (!mediaRecorderRef.current) {
+        reject("Recorder not initialized");
+        return;
+      }
+
+      mediaRecorderRef.current.onstop = () => {
+        const blob = new Blob(audioChunksRef.current, {
+          type: "audio/webm"
+        });
+        resolve(blob);
       };
 
-      await fetch(`${process.env.REACT_APP_BACKEND}/audio-text`, {
+      mediaRecorderRef.current.stop();
+    });
+
+    // 🔍 DEBUG: confirm audio size
+    console.log("Audio size:", audioBlob.size); // MUST be > 0
+
+    // 📤 Send audio to FastAPI
+    const formData = new FormData();
+    formData.append("file", audioBlob, "answer.webm");
+    console.log(formData);
+
+    const confidenceRes = await fetch(
+      "http://127.0.0.1:8000/analyze-full-speech",
+      {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      SpeechRecognition.stopListening();
-      resetTranscript();
-      setReadyForAnswer(false);
-
-      if (currentIndex + 1 < questions.length) {
-        setTimeout(() => {
-          setCurrentIndex((prev) => prev + 1);
-        }, 800);
-      } else {
-        console.log("✅ Interview complete! You can now save results.");
+        body: formData
       }
+    );
+    
+    const confidenceData = await confidenceRes.json();
+    console.log("Confidence API response:", confidenceData);
+
+    const confidence = confidenceData?.overall_score ?? 0;
+    setConfidenceScore(confidence);
+
+    // ✅ FINAL PAYLOAD
+    const payload = {
+      userId: auth.user._id,
+      question: questions[currentIndex].questionText,
+      answer: transcript.trim(),
+      confidenceScore: confidence,
+      allConfindance : confidenceData,
+
+    };
+
+    console.log("Submitting payload:", payload);
+
+    await fetch("http://localhost:4000/api/record/audio-text", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    resetTranscript();
+    setReadyForAnswer(false);
+
+    if (currentIndex + 1 < questions.length) {
+      setTimeout(() => {
+        setCurrentIndex(prev => prev + 1);
+      }, 800);
+    }
+
+  } catch (error) {
+    console.error("Failed to submit answer:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  /* ---------------- FINAL SUBMIT ---------------- */
+  const SubmitExam = async () => {
+    await handleSubmit();
+
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND}/record/submitExam`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            userId: auth.user._id,
+            headline: topic
+          })
+        }
+      );
+
+      
+
+      const data = await response.json();
+      console.log(data);
+
+      if (data) navigate("/score", { state: { result: data } });
+
     } catch (error) {
-      console.error("Failed to send:", error);
-    } finally {
-      setLoading(false);
+      console.error("Submit exam error:", error);
     }
   };
 
@@ -102,30 +200,7 @@ export default function InterviewQA({ topic }) {
     return <span>Browser doesn’t support speech recognition.</span>;
   }
 
-  const SubmitExam = async()=>{
-    handleSubmit();
-    let userId = auth.user._id;
-    let headline = topic;
-    try {
-       const response = await fetch(`${process.env.REACT_APP_BACKEND}/submitExam`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId, headline  })
-        });
-
-        const data = await response.json();
-      console.log(data);
-
-      if(data){
-        navigate('/score',{ state: { result: data } })
-      }
-      
-    } catch (error) {
-       console.error("Error fetching questions:", error);
-    }
-
-  }
-
+  /* ---------------- UI ---------------- */
   return (
     <div style={{ padding: "20px" }}>
       <h1>Interview Q&A</h1>
@@ -133,14 +208,18 @@ export default function InterviewQA({ topic }) {
       {questions.length > 0 && currentIndex < questions.length ? (
         <>
           <p>
-            Question {currentIndex + 1} of {questions.length}:
+            Question {currentIndex + 1} of {questions.length}
           </p>
-          <strong>{questions[currentIndex]?.question}</strong>
+          <strong>{questions[currentIndex]?.questionText}</strong>
 
           {readyForAnswer && (
             <div style={{ marginTop: "20px" }}>
-              <p>Microphone: {listening ? "on" : "off"}</p>
+              <p>Microphone: {listening ? "ON 🎙️" : "OFF"}</p>
               <p>Your answer: {transcript}</p>
+
+              {confidenceScore !== null && (
+                <p><b>Confidence Score:</b> {confidenceScore}%</p>
+              )}
 
               {currentIndex + 1 < questions.length ? (
                 <button
@@ -148,7 +227,7 @@ export default function InterviewQA({ topic }) {
                   onClick={handleSubmit}
                   disabled={loading}
                 >
-                  {loading ? "Sending..." : "Submit Answer"}
+                  {loading ? "Analyzing..." : "Submit Answer"}
                 </button>
               ) : (
                 <button
@@ -163,7 +242,7 @@ export default function InterviewQA({ topic }) {
           )}
         </>
       ) : questions.length > 0 && currentIndex >= questions.length ? (
-        <p>✅ Interview complete! Well done.</p>
+        <p>✅ Interview complete!</p>
       ) : (
         <Loading />
       )}
@@ -174,37 +253,43 @@ export default function InterviewQA({ topic }) {
 
 
 
+
 // import React, { useEffect, useState } from "react";
 // import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
 // import Loading from "./Loading";
+// import { useAuth } from "../context/AuthProvider";
+// import { useNavigate } from "react-router-dom";
 
 // export default function InterviewQA({ topic }) {
 //   const { transcript, listening, resetTranscript, browserSupportsSpeechRecognition } =
 //     useSpeechRecognition();
-
+//   const [auth , setAuth] = useAuth();
 //   const [questions, setQuestions] = useState([]);
 //   const [currentIndex, setCurrentIndex] = useState(0);
 //   const [loading, setLoading] = useState(false);
 //   const [readyForAnswer, setReadyForAnswer] = useState(false);
-//   const [completed, setCompleted] = useState(false);
-
-//   // Step 1: Fetch questions
+//   const navigate = useNavigate();
+//   // console.log(auth);
+  
+//   // Fetch questions from backend
 //   useEffect(() => {
 //     const fetchQuestions = async () => {
 //       try {
-//         const response = await fetch(`${process.env.REACT_APP_BACKEND}/chat`, {
-//           method: "POST",
+//         // const response = await fetch(`${process.env.REACT_APP_BACKEND}/agentChat/chat`, {
+//         const response = await fetch(`http://localhost:4000/api/question/questiona/React`, {
+//           method: "GET",
+//           credentials:"include",
 //           headers: { "Content-Type": "application/json" },
-//           body: JSON.stringify({
-//             message: `give only question ${topic} interview Question now the number of question is 5 , Now the formate in json array fromate`
-//           })
+          
 //         });
 
 //         const data = await response.json();
-//         const cleanedJson = data.reply.replace(/```json|```/g, "").trim();
-//         const parsedQuestions = JSON.parse(cleanedJson);
+//         console.log(data);
+        
+//         // const cleanedJson = data.reply.replace(/```json|```/g, "").trim();
+//         // const parsedQuestions = JSON.parse(cleanedJson);
 
-//         setQuestions(parsedQuestions);
+//         setQuestions(data);
 //       } catch (error) {
 //         console.error("Error fetching questions:", error);
 //       }
@@ -213,28 +298,53 @@ export default function InterviewQA({ topic }) {
 //     fetchQuestions();
 //   }, [topic]);
 
-//   // Step 2: Speak current question
+//   // Speak current question
+//   // useEffect(() => {
+//   //   if (questions.length === 0 || currentIndex >= questions.length) return;
+
+//   //   SpeechRecognition.stopListening();
+//   //   resetTranscript();
+
+//   //   const question = questions[currentIndex].question;
+//   //   const utterance = new SpeechSynthesisUtterance(question);
+//   //   utterance.rate = 1;
+//   //   utterance.pitch = 1;
+
+//   //   utterance.onend = () => {
+//   //     resetTranscript();
+//   //     setReadyForAnswer(true);
+//   //     SpeechRecognition.startListening({ continuous: true });
+//   //   };
+
+//   //   window.speechSynthesis.speak(utterance);
+//   // }, [currentIndex, questions, resetTranscript]);
+
+
 //   useEffect(() => {
-//     if (questions.length === 0 || currentIndex >= questions.length) return;
+//   if (
+//     questions.length === 0 ||
+//     currentIndex >= questions.length ||
+//     !questions[currentIndex]?.questionText
+//   ) return;
 
-//     SpeechRecognition.stopListening();
+//   SpeechRecognition.stopListening();
+//   resetTranscript();
+
+//   const utterance = new SpeechSynthesisUtterance(
+//     questions[currentIndex].questionText
+//   );
+
+//   utterance.onend = () => {
 //     resetTranscript();
+//     setReadyForAnswer(true);
+//     SpeechRecognition.startListening({ continuous: true });
+//   };
 
-//     const question = questions[currentIndex].question;
-//     const utterance = new SpeechSynthesisUtterance(question);
-//     utterance.rate = 1;
-//     utterance.pitch = 1;
+//   window.speechSynthesis.speak(utterance);
+// }, [currentIndex, questions]);
 
-//     utterance.onend = () => {
-//       resetTranscript();
-//       setReadyForAnswer(true);
-//       SpeechRecognition.startListening({ continuous: true });
-//     };
 
-//     window.speechSynthesis.speak(utterance);
-//   }, [currentIndex, questions, resetTranscript]);
-
-//   // Step 3: Submit answer
+//   // Submit answer
 //   const handleSubmit = async () => {
 //     if (!transcript.trim()) return;
 
@@ -242,12 +352,19 @@ export default function InterviewQA({ topic }) {
 //       setLoading(true);
 
 //       const payload = {
-//         question: questions[currentIndex].question,
+//         userId : auth.user._id,
+//         question : questions[currentIndex].questionText,
 //         answer: transcript.trim()
 //       };
 
-//       await fetch(`${process.env.REACT_APP_BACKEND}/audio-text`, {
+//       console.log(payload);
+      
+
+//       // await fetch(`${process.env.REACT_APP_BACKEND}/record/audio-text`, {
+//        await fetch(`http://localhost:4000/api/record/audio-text`, {
+
 //         method: "POST",
+//          credentials: 'include',
 //         headers: { "Content-Type": "application/json" },
 //         body: JSON.stringify(payload)
 //       });
@@ -261,8 +378,7 @@ export default function InterviewQA({ topic }) {
 //           setCurrentIndex((prev) => prev + 1);
 //         }, 800);
 //       } else {
-//         // Last question answered
-//         setCompleted(true);
+//         console.log("✅ Interview complete! You can now save results.");
 //       }
 //     } catch (error) {
 //       console.error("Failed to send:", error);
@@ -275,142 +391,29 @@ export default function InterviewQA({ topic }) {
 //     return <span>Browser doesn’t support speech recognition.</span>;
 //   }
 
-//   return (
-//     <div style={{ padding: "20px" }}>
-//       <h1>Interview Q&A</h1>
-
-//       {questions.length > 0 && !completed ? (
-//         <>
-//           <p>
-//             Question {currentIndex + 1} of {questions.length}:
-//           </p>
-//           <strong>{questions[currentIndex]?.question}</strong>
-
-//           {readyForAnswer && (
-//             <div style={{ marginTop: "20px" }}>
-//               <p>Microphone: {listening ? "on" : "off"}</p>
-//               <p>Your answer: {transcript}</p>
-//               <button
-//                 className="btn btn-primary"
-//                 onClick={handleSubmit}
-//                 disabled={loading}
-//               >
-//                 {loading ? "Sending..." : currentIndex + 1 === questions.length ? "Complete Interview" : "Submit Answer"}
-//               </button>
-//             </div>
-//           )}
-//         </>
-//       ) : completed ? (
-//         <p>✅ Interview complete! Well done.</p>
-//       ) : (
-//         <Loading />
-//       )}
-//     </div>
-//   );
-// }
-
-
-
-
-// import React, { useEffect, useState } from "react";
-// import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
-// import Loading from "./Loading";
-
-// export default function InterviewQA(topic) {
-//   const { transcript, listening, resetTranscript, browserSupportsSpeechRecognition } =
-//     useSpeechRecognition();
- 
-//   const [questions, setQuestions] = useState([]);
-//   const [currentIndex, setCurrentIndex] = useState(0);
-//   const [loading, setLoading] = useState(false);
-//   const [readyForAnswer, setReadyForAnswer] = useState(false);
-
-//   console.log(topic);
-  
-
-//   // Step 1: Fetch questions from backend
-//   useEffect(() => {
-//     const fetchQuestions = async () => {
-//       try {
-//         const response = await fetch(`${process.env.REACT_APP_BACKEND}/chat`, {
+//   const SubmitExam = async()=>{
+//     handleSubmit();
+//     let userId = auth.user._id;
+//     let headline = topic;
+//     try {
+//        const response = await fetch(`${process.env.REACT_APP_BACKEND}/record/submitExam`, {
 //           method: "POST",
 //           headers: { "Content-Type": "application/json" },
-//           body: JSON.stringify({
-//             message:
-//               `give only question ${topic} interview Question now the number of question is 5 , Now the formate in json array fromate`
-//           })
+//           credentials: "include",
+//           body: JSON.stringify({ userId, headline  })
 //         });
 
 //         const data = await response.json();
-//         const cleanedJson = data.reply.replace(/```json|```/g, "").trim();
-//         const parsedQuestions = JSON.parse(cleanedJson);
+//       console.log(data);
 
-//         setQuestions(parsedQuestions);
-//       } catch (error) {
-//         console.error("Error fetching questions:", error);
+//       if(data){
+//         navigate('/score',{ state: { result: data } })
 //       }
-//     };
-
-//     fetchQuestions();
-//   }, []);
-
-//   // Step 2: Speak the current question
-//   useEffect(() => {
-//     if (questions.length === 0 || currentIndex >= questions.length) return;
-
-//     // Stop any previous listening
-//     SpeechRecognition.stopListening();
-//     resetTranscript(); // clear old answer
-
-//     const question = questions[currentIndex].question;
-//     const utterance = new SpeechSynthesisUtterance(question);
-//     utterance.rate = 1;
-//     utterance.pitch = 1;
-
-//     utterance.onend = () => {
-//       resetTranscript(); // clear again before listening
-//       setReadyForAnswer(true);
-//       SpeechRecognition.startListening({ continuous: true });
-//     };
-
-//     window.speechSynthesis.speak(utterance);
-//   }, [currentIndex, questions]);
-
-//   // Step 3: Submit answer and move to next question
-//   const handleSubmit = async () => {
-//     if (!transcript.trim()) return;
-
-//     try {
-//       setLoading(true);
-
-//       const payload = {
-//         question: questions[currentIndex].question,
-//         answer: transcript.trim()
-//       };
-
-//       await fetch(`${process.env.REACT_APP_BACKEND}/audio-text`, {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify(payload)
-//       });
-
-//       SpeechRecognition.stopListening();
-//       resetTranscript();
-//       setReadyForAnswer(false);
-
-//       // Move to next question after short delay
-//       setTimeout(() => {
-//         setCurrentIndex((prev) => prev + 1);
-//       }, 800);
+      
 //     } catch (error) {
-//       console.error("Failed to send:", error);
-//     } finally {
-//       setLoading(false);
+//        console.error("Error fetching questions:", error);
 //     }
-//   };
 
-//   if (!browserSupportsSpeechRecognition) {
-//     return <span>Browser doesn’t support speech recognition.</span>;
 //   }
 
 //   return (
@@ -422,19 +425,30 @@ export default function InterviewQA({ topic }) {
 //           <p>
 //             Question {currentIndex + 1} of {questions.length}:
 //           </p>
-//           <strong>{questions[currentIndex]?.question}</strong>
+//           <strong>{questions[currentIndex]?.questionText}</strong>
 
 //           {readyForAnswer && (
 //             <div style={{ marginTop: "20px" }}>
 //               <p>Microphone: {listening ? "on" : "off"}</p>
 //               <p>Your answer: {transcript}</p>
-//               <button
-//                 className="btn btn-primary"
-//                 onClick={handleSubmit}
-//                 disabled={loading}
-//               >
-//                 {loading ? "Sending..." : "Submit Answer"}
-//               </button>
+
+//               {currentIndex + 1 < questions.length ? (
+//                 <button
+//                   className="btn btn-primary"
+//                   onClick={handleSubmit}
+//                   disabled={loading}
+//                 >
+//                   {loading ? "Sending..." : "Submit Answer"}
+//                 </button>
+//               ) : (
+//                 <button
+//                   className="btn btn-success"
+//                   onClick={SubmitExam}
+//                   disabled={loading}
+//                 >
+//                   {loading ? "Finishing..." : "Complete Interview"}
+//                 </button>
+//               )}
 //             </div>
 //           )}
 //         </>
@@ -446,3 +460,5 @@ export default function InterviewQA({ topic }) {
 //     </div>
 //   );
 // }
+
+

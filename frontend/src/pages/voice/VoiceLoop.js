@@ -27,9 +27,10 @@ const VoiceAssistant = () => {
     try {
       setLoading(true);
 
-      const response = await fetch(`${process.env.REACT_APP_BACKEND}/audio-text`, {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND}/record/audio-text`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: "include",
         body: JSON.stringify({ message: transcript.trim() })
       });
 
