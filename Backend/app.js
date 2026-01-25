@@ -10,6 +10,8 @@ import TopicControl from "./router/TopicControl.js";
 import chatRouter from "./router/chatRouter.js";
 import RecordRouter from "./router/RecordRouter.js";
 import QuestionRou from "./router/QuestionsRouter.js";
+import { getImage , calEmo} from "./controllers/Emotion.js";
+
 
 // Middleware
 import authMiddleware from "./middlewares/authMiddleware.js";
@@ -24,10 +26,9 @@ const server = http.createServer(app);
 
 // Middlewares
 app.use(cors({
-  origin: "http://localhost:3000", // frontend URL
+  origin: ["http://localhost:3000", "http://localhost:3001"],
   credentials: true
 }));
-
 app.use(cookieParser());
 app.use(express.json());
 
@@ -38,11 +39,13 @@ app.use("/api/user", userRouter);
 app.use("/api/topic", TopicControl);
 app.use("/api/agentChat", authMiddleware, chatRouter);
 app.use("/api/record", authMiddleware, RecordRouter);
-// app.use("/api/question", authMiddleware, QuestionRou);
-app.use("/api/question", QuestionRou);
+app.use("/api/question", authMiddleware, QuestionRou);
 
 /* LOGOUT */
 app.post("/api/logout", authMiddleware, logout);
+
+app.post("/api/emonation" ,getImage )
+app.get("/api/calEmo", calEmo);
 
 export default server;
 

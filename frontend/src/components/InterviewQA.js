@@ -117,7 +117,7 @@ const handleSubmit = async () => {
     console.log(formData);
 
     const confidenceRes = await fetch(
-      "http://127.0.0.1:8000/analyze-full-speech",
+      "http://127.0.0.1:8001/analyze-full-speech",
       {
         method: "POST",
         body: formData
@@ -171,6 +171,17 @@ const handleSubmit = async () => {
     await handleSubmit();
 
     try {
+       const responseEmo = await fetch(
+        `${process.env.REACT_APP_BACKEND}/calEmo`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        }
+      );
+
+      const dataEmo = await responseEmo.json();
+      console.log("Emotion data ",dataEmo);
       const response = await fetch(
         `${process.env.REACT_APP_BACKEND}/record/submitExam`,
         {

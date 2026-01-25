@@ -78,7 +78,7 @@ const getTopics = async (req, res) => {
 const getOneTopics = async (req, res) => {
   try {
     const _id = req.params.id;
-    console.log(_id);
+    // console.log(_id);
     
     const topics = await TopicModel.findOne({_id:_id});
     return res.status(200).json(topics);

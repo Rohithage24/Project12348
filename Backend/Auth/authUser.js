@@ -15,7 +15,7 @@ const createToken = (payload) => {
         gmail: payload.gmail,
         mobile: payload.mobile
       },
-      JWT_SECRET
+      JWT_SECRET,
       // { expiresIn: JWT_EXPIRES_IN }
     );
     return token;
@@ -28,7 +28,7 @@ const createToken = (payload) => {
 // Verify a JWT token
 const verifyToken = (token) => {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET );
+    const decoded = jwt.verify(token, JWT_SECRET);
     return decoded;
   } catch (error) {
     console.error("Invalid token:", error);

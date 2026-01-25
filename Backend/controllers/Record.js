@@ -152,17 +152,20 @@ const getUserTest = async (req, res) => {
  * Get single test by testId
  */
 const getTest = async (req, res) => {
-   const _id = req.params.id;
-  //  console.log(_id);
-   
+  const testId = req.params.id;
+console.log(testId);
+
   try {
-    const TestRecords = await TestRecord.find({_id : _id});
-    // console.log(TestRecords);
+    const test = await TestRecord.findById(testId);
+
+    if (!test) {
+      return res.status(404).json({ message: "Test not found" });
+    }
     
-    return res.status(200).json(TestRecords);
+    return res.status(200).json(test);
   } catch (err) {
-    console.error("Get Topics Error:", err);
-    return res.status(500).json({ message: "Failed to fetch topics" });
+    console.error("Get Test Error:", err);
+    return res.status(500).json({ message: "Failed to fetch test" });
   }
 };
 
@@ -174,3 +177,129 @@ export default {
 };
 
 
+
+
+// import TestRecord from '../model/TestQuestion.js';
+
+// let testSessions = {};
+
+// const QueAns = async (req, res) => {
+//   const { userId, question, answer ,correctAnswer ,confidenceScore ,allConfindance } = req.body;
+//   console.log(req.body);
+  
+//   try {
+//     const response = await fetch(
+//       'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyDmNXLI2rRoYliD0gNsodU_LeBH7mIMhCI',
+//       {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify({
+//           contents: [
+//             {
+//               role: 'user',
+//               parts: [
+//                 {
+//                   text: `Give me Score and accuracy of this Question and Answer in percentage for an interview.
+// Question: ${question} 
+// Answer: ${answer} 
+// Respond ONLY in raw JSON with keys: correctAnswer, score, accuracy`
+//                 }
+//               ]
+//             }
+//           ]
+//         })
+//       }
+//     );
+
+//     const data = await response.json();
+//     let reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+//     reply = reply.replace(/```json|```/g, '').trim();
+
+//     let parsedReply;
+//     try {
+//       parsedReply = JSON.parse(reply);
+//     } catch {
+//       parsedReply = { correctAnswer: correctAnswer, score: 0, accuracy: 0 };
+//     }
+
+//     if (!testSessions[userId]) {
+//       testSessions[userId] = [];
+//     }
+
+//     testSessions[userId].push({
+//       questionText: question,
+//       correctAnswer: correctAnswer || "Not provided",
+//       userAnswer: answer,
+//       QuesScore: parsedReply.score || 0,
+//       accuracy: parsedReply.accuracy || 0,
+//       ConfidenceScore:confidenceScore,
+//       AllConfindacce:allConfindance,
+//     });
+
+//     res.json({ reply: parsedReply });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send('Error calling Gemini API');
+//   }
+// };
+
+// const record = async (req, res) => {
+//   try {
+//     const { userId, headline } = req.body;
+//     const sessionQuestions = testSessions[userId] || [];
+
+//     if (!sessionQuestions.length) {
+//       return res.status(400).json({ message: "No questions found for this user" });
+//     }
+
+//     let score = 0;
+//     sessionQuestions.forEach(q => score += q.QuesScore || 0);
+
+//     const testRec = await TestRecord.create({
+//       userId,
+//       headline,
+//       questions: sessionQuestions,
+//       score,
+//       date: new Date()
+//     });
+
+//     delete testSessions[userId];
+//     console.log(testRec);
+    
+//     return res.status(201).json({
+//       message: "Test Complete successfully",
+//       test: testRec
+//     });
+//   } catch (err) {
+//     console.error("Add text Error:", err);
+//     return res.status(500).json({ message: "Internal Server Error" });
+//   }
+// };
+
+
+// const getUserTest = async (req, res) => {
+//    const _id = req.params.id;
+//   try {
+//     const TestRecords = await TestRecord.find({userId : _id});
+//     return res.status(200).json(TestRecords);
+//   } catch (err) {
+//     console.error("Get Topics Error:", err);
+//     return res.status(500).json({ message: "Failed to fetch topics" });
+//   }
+// };
+
+
+// const getTest = async (req, res) => {
+//    const _id = req.params.id;
+//   //  console.log(_id);
+   
+//   try {
+//     const TestRecords = await TestRecord.find({_id : _id});
+//     return res.status(200).json(TestRecords);
+//   } catch (err) {
+//     console.error("Get Topics Error:", err);
+//     return res.status(500).json({ message: "Failed to fetch topics" });
+//   }
+// };
+
+// export default {  QueAns, record ,getUserTest ,getTest}

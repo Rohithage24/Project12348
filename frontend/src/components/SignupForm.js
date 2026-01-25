@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthProvider";
 
 
-const SignupForm = ({ onClose, onBack }) => {
+const SignupForm = ({ onClose , onBack }) => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",

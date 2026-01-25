@@ -2,7 +2,7 @@ import mongoose from 'mongoose'
 
 const userSchema = new mongoose.Schema({
   Name: String,
-  gmail: String,
+  gmail: {type: String, unique: true, sparse: true},
   password: String,
   mobile: { type: String, unique: true },
   address: String,
