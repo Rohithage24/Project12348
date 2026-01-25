@@ -42,7 +42,7 @@ app.use("/api/record", authMiddleware, RecordRouter);
 app.use("/api/question", authMiddleware, QuestionRou);
 
 /* LOGOUT */
-app.post("/api/logout", authMiddleware, logout);
+app.get("/api/logout", authMiddleware, logout);
 
 app.post("/api/emonation" ,getImage )
 app.get("/api/calEmo", calEmo);

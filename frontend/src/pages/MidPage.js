@@ -15,8 +15,10 @@ const MidPage = () => {
   const [history, setHistory] = useState([])
 
   useEffect(() => {
-    if (!auth.user) navigate('/')
-  }, [auth, navigate])
+  if (!auth.user) {
+    navigate("/", { state: { openLogin: true } });
+  }
+}, [auth, navigate]);
 
   useEffect(() => {
     const fetchTopic = async () => {
