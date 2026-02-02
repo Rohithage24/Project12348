@@ -44,7 +44,11 @@ console.log(results);
   // ---------------- OVERALL VOICE CONFIDENCE ----------------
   const voiceScores =
     results?.questions
+<<<<<<< HEAD
       ?.map((q) => q.ConfidenceScore)
+=======
+      ?.map((q) => q.AllConfindacce?.overall_score)
+>>>>>>> origin/charwak
       .filter((v) => typeof v === "number") || [];
 
   const overallVoiceConfidence =
@@ -75,7 +79,11 @@ console.log(results);
       ?.map(
         (q) =>
           q.efficiency ??
+<<<<<<< HEAD
           ((q.accuracy ?? 0 + (q.ConfidenceScore ?? 0)) / 2)
+=======
+          ((q.accuracy ?? 0 + (q.AllConfindacce?.overall_score ?? 0)) / 2)
+>>>>>>> origin/charwak
       )
       .filter((v) => typeof v === "number") || [];
 
@@ -154,7 +162,11 @@ console.log(results);
                     🎯 Accuracy: {q.accuracy ?? "N/A"}%
                   </div>
                   <div className="score-miniBox">
+<<<<<<< HEAD
                     🎤 Speech Confidence: {q.ConfidenceScore ?? "N/A"}%
+=======
+                    🎤 Speech Confidence: {q.AllConfindacce?.overall_score ?? "N/A"}%
+>>>>>>> origin/charwak
                   </div>
                 </div>
               </li>
@@ -171,6 +183,7 @@ console.log(results);
           <div className="score-overallBox">
             😐 Face Confidence
             <br />
+<<<<<<< HEAD
             {results.emotion !== null && (
               <div
                 className="score-progressBar"
@@ -179,6 +192,9 @@ console.log(results);
                 <div className="score-progressFill"></div>
               </div>
             )}
+=======
+            Model will be added later
+>>>>>>> origin/charwak
           </div>
 
           <div className="score-overallBox">
