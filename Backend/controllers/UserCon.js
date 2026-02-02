@@ -33,10 +33,19 @@ export const sendOTP = async (req, res) => {
       { upsert: true, new: true }
     );
 
+console.log(process.env.TWILIO_MESSAGING_SERVICE_SID);
+
+    //  await client.messages.create({
+    //   to: mobile,
+    //   messagingServiceSid: process.env.TWILIO_MESSAGING_SERVICE_SID,
+    //   body: `Your OTP is ${otp}`,
+    // });
+
+
     // await client.messages.create({
     //   body: `Your OTP is ${otp}`,
     //   from: process.env.TWILIO_PHONE_NUMBER,
-    //   to: mobile
+    //   to: `+91${mobile}`
     // });
 
     res.status(200).json({ message: "OTP sent successfully" , otp : otp });

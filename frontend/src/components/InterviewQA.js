@@ -61,7 +61,8 @@ export default function InterviewQA({ topic }) {
     const utterance = new SpeechSynthesisUtterance(
       questions[currentIndex].questionText
     );
-
+     console.log(questions);
+     
     utterance.onend = async () => {
       resetTranscript();
       setReadyForAnswer(true);
@@ -116,8 +117,13 @@ const handleSubmit = async () => {
     formData.append("file", audioBlob, "answer.webm");
     console.log(formData);
 
+    console.log(process.env.REACT_APP_SPEECH_CONFIDENCE);
+    
+
     const confidenceRes = await fetch(
-      "http://127.0.0.1:8001/analyze-full-speech",
+      // "http://127.0.0.1:8001/analyze-full-speech",
+      `${process.env.REACT_APP_SPEECH_CONFIDENCE}/analyze-full-speech`,
+
       {
         method: "POST",
         body: formData
@@ -135,6 +141,9 @@ const handleSubmit = async () => {
       userId: auth.user._id,
       question: questions[currentIndex].questionText,
       answer: transcript.trim(),
+      correctAnswer:questions[currentIndex].correctAnswer,
+      key_concepts:questions[currentIndex].key_concepts,
+      keywords:questions[currentIndex].keywords,
       confidenceScore: confidence,
       allConfindance : confidenceData,
 
@@ -173,6 +182,7 @@ const handleSubmit = async () => {
     try {
        const responseEmo = await fetch(
         `${process.env.REACT_APP_BACKEND}/calEmo`,
+
         {
           method: "GET",
           headers: { "Content-Type": "application/json" },
@@ -190,7 +200,8 @@ const handleSubmit = async () => {
           credentials: "include",
           body: JSON.stringify({
             userId: auth.user._id,
-            headline: topic
+            headline: topic,
+            dataEmo :dataEmo,
           })
         }
       );

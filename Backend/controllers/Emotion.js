@@ -2,7 +2,7 @@ const recordEmo = [];
 
 export const getImage = async (req, res) => {
   try {
-    console.log("Image received");
+    // console.log("Image received");
 
     const imageSrc = req.body.image;
 

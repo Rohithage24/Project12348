@@ -7,7 +7,7 @@ const History = () => {
   const { id } = useParams()
   const [test, setTest] = useState(null)
   const [loading, setLoading] = useState(true)
-  console.log(test)
+  console.log("test: ",test)
 console.log(id);
 
   useEffect(() => {
@@ -22,7 +22,9 @@ console.log(id);
           }
         })
         const data = await res.json()
-        setTest(data[0])
+        console.log(data);
+        
+        setTest(data)
       } catch (err) {
         console.error(err)
       } finally {

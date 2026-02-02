@@ -7,6 +7,7 @@ const questionSchema = new mongoose.Schema({
   QuesScore: { type: Number, default: 0 },
   accuracy: { type: Number, default: 0 },
   ConfidenceScore: { type: Number, default: 0 },
+  evaluation: { type: String, required: true },
 
   // Nested object for AI confidence analysis
   AllConfindacce: {
@@ -26,6 +27,8 @@ const testRecordSchema = new mongoose.Schema(
     headline: { type: String, required: true },
     questions: [questionSchema],
     score: { type: Number, required: true, default: 0 },
+    accuracy: { type: Number, required: true, default: 0 },
+    emotion :{type : Number , required :true},
     date: { type: Date, default: Date.now }
   },
   { timestamps: true }

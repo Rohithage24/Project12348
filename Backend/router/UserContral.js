@@ -13,7 +13,7 @@ import {sendOTPFor , verifyOTPFor , passwordForget} from "../controllers/ForgotP
 const router = express.Router();
 
 router.post("/send-otp", sendOTP);
-router.post("/verify-otp",authMiddleware ,verifyOTP);
+router.post("/verify-otp" ,verifyOTP);
 router.post("/register",authMiddleware, addUser);
 router.post("/login", signup);
 
