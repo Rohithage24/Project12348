@@ -9,7 +9,7 @@ from pydub import AudioSegment
 # --------------------------------------------------
 # FFmpeg path (WINDOWS – REQUIRED)
 # --------------------------------------------------
-AudioSegment.converter = r"C:\Users\rohit\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin\ffmpeg.exe"
+#AudioSegment.converter = r"C:\Users\rohit\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin\ffmpeg.exe"
 
 app = FastAPI()
 
