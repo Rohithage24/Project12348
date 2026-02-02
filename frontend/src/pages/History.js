@@ -1,89 +1,149 @@
 // src/pages/History.js
-import React, { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
-import Loading from '../components/Loading'
+import React, { useEffect, useState, useRef } from "react";
+import { useParams } from "react-router-dom";
+import "./History.css";
 
 const History = () => {
-  const { id } = useParams()
-  const [test, setTest] = useState(null)
-  const [loading, setLoading] = useState(true)
-  console.log("test: ",test)
-console.log(id);
+  const { id } = useParams();
+  const [data, setData] = useState(null);
+  const [openIndex, setOpenIndex] = useState(null);
+  const reportRef = useRef(null);
 
   useEffect(() => {
-    const fetchTopic = async () => {
-      try {
-        
-        const res = await fetch(`${process.env.REACT_APP_BACKEND}/record/gettext/${id}`, {
-          method: 'GET',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        })
-        const data = await res.json()
-        console.log(data);
-        
-        setTest(data)
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchTopic()
-  }, [id])
+    const fetchHistory = async () => {
+      const res = await fetch(
+        `${process.env.REACT_APP_BACKEND}/record/gettext/${id}`,
+        { credentials: "include" }
+      );
+      const result = await res.json();
+      setData(result);
+    };
+    fetchHistory();
+  }, [id]);
 
-  if (loading)
-    return (
-      <div className='history-loading'>
-        <Loading />
-      </div>
-    )
-  if (!test) return <div className='history-error'>No data found</div>
+  if (!data) return <div className="history-loading">Loading...</div>;
 
-  const formattedDate = new Date(test.date).toLocaleString()
+  const correctCount = data.questions.filter(q => q.QuesScore >= 60).length;
+
+  const accuracy =
+    Math.round(
+      data.questions.reduce((a, q) => a + (q.accuracy || 0), 0) /
+        data.questions.length
+    ) || 0;
+
+  const avgConfidence =
+    Math.round(
+      data.questions.reduce((a, q) => a + (q.ConfidenceScore || 0), 0) /
+        data.questions.length
+    ) || 0;
+
+  const handlePrint = () => window.print();
 
   return (
-    <div className='history-container'>
-      <h1 className='history-headline'>{test.headline} - Test Review</h1>
-
-      <div className='history-metaBox'>
-        <p>
-          <strong>Date:</strong> {formattedDate}
-        </p>
-        <p>
-          <strong>Total Score:</strong> {test.score}
-        </p>
+    <div className="assessment-container">
+      {/* ACTION BAR */}
+      <div className="history-actionBar">
+        <button className="history-btn primary" onClick={handlePrint}>
+          🖨 Print / Download Report
+        </button>
       </div>
 
-      <div className='history-questionsWrapper'>
-        {test.questions.map((q, index) => (
-          <div key={q._id || index} className='history-card'>
-            <h3 className='history-questionTitle'>
-              Q{index + 1}. {q.questionText}
-            </h3>
-            <p>
-              <strong>Your Answer:</strong>
-            </p>
-            <p className='history-answerText'>{q.userAnswer}</p>
+      {/* PRINTABLE REPORT */}
+      <div ref={reportRef}>
+        {/* HEADER */}
+        <div className="assessment-header">
+          <span className="badge">Interview Complete</span>
+          <h1>{data.headline} Assessment</h1>
+          <p>{new Date(data.date).toLocaleString()}</p>
+        </div>
 
-            <p>
-              <strong>Correct Answer:</strong>
-            </p>
-            <p className='history-correctText'>
-              {q.correctAnswer || 'Not provided'}
-            </p>
-
-            <div className='history-scoreBox'>
-              <span>Score: {q.QuesScore}</span> |
-              <span> Accuracy: {q.accuracy}%</span>
+        {/* SCORE SECTION */}
+        <div className="assessment-scoreSection">
+          <div className="circle-score">
+            <svg>
+              <circle cx="70" cy="70" r="60" />
+              <circle
+                cx="70"
+                cy="70"
+                r="60"
+                style={{
+                  strokeDasharray: 377,
+                  strokeDashoffset: 377 - (377 * data.score) / 100
+                }}
+              />
+            </svg>
+            <div className="circle-text">
+              <h2>{Math.round(data.score)}%</h2>
+              <span>Overall Score</span>
             </div>
           </div>
-        ))}
+
+          <div className="stat-cards">
+            <div className="stat-card danger">
+              <span>Needs Improvement</span>
+              <h3>{accuracy}%</h3>
+              <p>Accuracy</p>
+            </div>
+
+            <div className="stat-card success">
+              <span>Good</span>
+              <h3>{data.emotion}%</h3>
+              <p>Emotional IQ</p>
+            </div>
+
+            <div className="stat-card success">
+              <span>Good</span>
+              <h3>{avgConfidence}%</h3>
+              <p>Avg Confidence</p>
+            </div>
+          </div>
+        </div>
+
+        <p className="answered-text">
+          You answered {correctCount} out of {data.questions.length} questions correctly
+        </p>
+
+        {/* QUESTION LIST */}
+        <div className="question-section">
+          <h2>Question Breakdown</h2>
+
+          {data.questions.map((q, i) => {
+            const isCorrect = q.QuesScore >= 60;
+            return (
+              <div key={i} className="question-card">
+                <div
+                  className="question-header"
+                  onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                >
+                  <div className="question-left">
+                    <span className="q-index">{i + 1}</span>
+                    <span>{q.questionText}</span>
+                  </div>
+
+                  <div className="question-right">
+                    <span className={`status ${isCorrect ? "correct" : "incorrect"}`}>
+                      {isCorrect ? "Correct" : "Incorrect"}
+                    </span>
+                    <span className="percent">{q.QuesScore}%</span>
+                    <span className="arrow">{openIndex === i ? "▲" : "▼"}</span>
+                  </div>
+                </div>
+
+                {openIndex === i && (
+                  <div className="question-body">
+                    <p><b>Your Answer:</b> {q.userAnswer}</p>
+                    <p><b>Correct Answer:</b> {q.correctAnswer}</p>
+                    <p><b>Accuracy:</b> {q.accuracy}%</p>
+                    <p><b>Confidence:</b> {q.ConfidenceScore}%</p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default History
+export default History;

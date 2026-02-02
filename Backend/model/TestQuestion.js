@@ -10,7 +10,7 @@ const questionSchema = new mongoose.Schema({
   evaluation: { type: String, required: true },
 
   // Nested object for AI confidence analysis
-  AllConfindacce: {
+ AllConfindance: {
     overall_score: { type: Number, default: 0 },
     pace_score: { type: Number, default: 0 },
     clarity_score: { type: Number, default: 0 },
