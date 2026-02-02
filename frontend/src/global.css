@@ -1109,59 +1109,344 @@
 
 .profile-ring-bg { stroke: #eee; fill: transparent; }
 .profile-ring-progress { fill: transparent; }
-/* Score Page */
+/* ================= SCORE PAGE ================= */
+
 .score-container {
-  padding: 30px;
-  max-width: 900px;
+  padding: 40px 20px;
+  max-width: 1000px;
   margin: 0 auto;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .score-heading {
   text-align: center;
-  font-size: 32px;
-  color: #2d3436;
-  margin-bottom: 20px;
+  font-size: 34px;
+  color: #2c3e50;
+  margin-bottom: 30px;
 }
 
+/* Summary Card */
+.score-summaryCard {
+  background: linear-gradient(135deg, #74b9ff, #0984e3);
+  color: white;
+  padding: 25px;
+  border-radius: 16px;
+  margin-bottom: 30px;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.15);
+  text-align: center;
+}
+
+.score-summaryCard h2 {
+  margin-bottom: 10px;
+}
+
+.score-summaryMeta {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.score-summaryBox {
+  background: rgba(255,255,255,0.15);
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: bold;
+}
+
+/* Question Card */
 .score-card {
   background-color: #f9f9f9;
-  padding: 20px;
-  margin-bottom: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-
-.score-topic {
-  font-size: 22px;
-  color: #0984e3;
+  padding: 25px;
+  margin-bottom: 25px;
+  border-radius: 14px;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.1);
 }
 
 .score-subHeading {
-  margin-top: 10px;
+  margin-bottom: 15px;
+  font-size: 22px;
   color: #2d3436;
+  border-bottom: 2px solid #dfe6e9;
+  padding-bottom: 6px;
 }
 
 .score-questionList {
   list-style: none;
   padding: 0;
-  margin-top: 10px;
 }
 
 .score-questionItem {
-  background-color: #fff;
-  margin-bottom: 10px;
-  padding: 10px;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  background-color: #ffffff;
+  margin-bottom: 18px;
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  border-left: 6px solid #0984e3;
 }
 
+/* Text blocks */
+.score-label {
+  font-weight: bold;
+  color: #2d3436;
+}
+
+.score-answerBox {
+  background-color: #f1f2f6;
+  padding: 12px;
+  border-radius: 8px;
+  margin: 6px 0 12px 0;
+}
+
+.score-correctBox {
+  background-color: #e8f6e8;
+  padding: 12px;
+  border-radius: 8px;
+  margin: 6px 0 12px 0;
+}
+
+/* Confidence box */
+.score-confidenceBox {
+  background-color: #eef6ff;
+  padding: 14px;
+  border-radius: 10px;
+  margin-top: 12px;
+  border-left: 5px solid #3498db;
+}
+
+.score-confidenceBox h4 {
+  margin-bottom: 8px;
+  color: #0984e3;
+}
+
+/* No data */
 .score-loading {
   text-align: center;
   margin-top: 50px;
   font-size: 20px;
   color: #3498db;
 }
+/* Per-question mini stats */
+.score-miniStats {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #eef6ff;
+  border-radius: 8px;
+  border-left: 4px solid #3498db;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.score-miniBox {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+/* Overall analysis section */
+.score-overallSection {
+  margin-top: 40px;
+  padding: 25px;
+  background: linear-gradient(135deg, #6c5ce7, #0984e3);
+  color: white;
+  border-radius: 18px;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.15);
+}
+
+
+.score-overallSection h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.score-overallGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.score-overallBox {
+  background: rgba(255,255,255,0.18);
+  padding: 15px;
+  border-radius: 12px;
+  text-align: center;
+  font-weight: bold;
+}
+/* Remark Section */
+.score-remarkBox {
+  margin: 25px 0;
+  padding: 18px;
+  border-radius: 14px;
+  background-color: #fff3cd;
+  border-left: 6px solid #f1c40f;
+  color: #856404;
+  font-size: 18px;
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+/* ================= AI DYNAMIC EFFECTS ================= */
+
+/* Fade + slide animation */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.score-summaryCard,
+.score-remarkBox,
+.score-card,
+.score-overallSection {
+  animation: fadeSlideUp 0.8s ease forwards;
+}
+
+/* Delay for layered AI feel */
+.score-remarkBox {
+  animation-delay: 0.2s;
+}
+
+.score-card {
+  animation-delay: 0.4s;
+}
+
+.score-overallSection {
+  animation-delay: 0.6s;
+}
+
+/* AI glow effect */
+.score-summaryCard,
+.score-overallSection {
+  position: relative;
+  overflow: hidden;
+}
+
+.score-summaryCard::before,
+.score-overallSection::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.15), transparent 70%);
+  animation: aiGlow 6s linear infinite;
+}
+
+@keyframes aiGlow {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Hover lift for AI cards */
+.score-questionItem,
+.score-summaryBox,
+.score-overallBox {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.score-questionItem:hover,
+.score-summaryBox:hover,
+.score-overallBox:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 12px 22px rgba(0,0,0,0.18);
+}
+
+/* Animated number feel */
+.score-miniBox {
+  animation: fadeSlideUp 0.6s ease forwards;
+}
+/* Progress bar */
+.score-progressBar {
+  width: 100%;
+  height: 14px;
+  background-color: rgba(255,255,255,0.3);
+  border-radius: 20px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.score-progressFill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #3b2ef0, #958baa);
+  border-radius: 20px;
+  animation: fillBar 1.5s ease forwards;
+}
+
+@keyframes fillBar {
+  from { width: 0%; }
+  to { width: var(--target-width); }
+}
+/* Dynamic AI remark for questions */
+.remarkAI {
+  margin-top: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #faf6f6;
+  opacity: 0;
+  animation: fadeSlideUp 0.6s ease forwards;
+  animation-delay: 0.2s;
+}
+
+/* Coming Soon text */
+.coming-soon {
+  display: block;
+  margin-top: 6px;
+  font-size: 14px;
+  font-style: italic;
+  color: #ffeaa7;
+}
+
+/* Question hover glow for AI effect */
+.score-questionItem:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 16px 28px rgba(0,0,0,0.22);
+  border-left-color: #6c5ce7;
+  transition: all 0.35s ease;
+}
+
+/* Summary Card glow */
+.score-summaryCard:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 16px 28px rgba(0,0,0,0.2);
+  transition: all 0.35s ease;
+}
+
+/* Overall Box hover */
+.score-overallBox:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 14px 26px rgba(0,0,0,0.18);
+  transition: all 0.35s ease;
+}
+
+/* Smooth AI progress bar */
+.score-progressFill {
+  animation: fillBar 1.5s ease forwards;
+}
+
+/* Optional: neon glow for AI feeling */
+.score-remarkBox {
+  box-shadow: 0 0 24px rgba(241, 196, 15, 0.6);
+}
+
+.score-overallBox {
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+
 /* Home Page Styles */
 
 /* Hero Section */
