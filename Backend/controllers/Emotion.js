@@ -24,7 +24,7 @@ export const getImage = async (req, res) => {
 
     const pythonResult = await response.json();
     recordEmo.push(pythonResult.confidence_score);
-    // console.log("Python response:", pythonResult);
+    console.log("Python response:", pythonResult);
 
     res.status(200).json({
       success: true,

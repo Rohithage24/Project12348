@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import tensorflow as tf
 
-MODEL_PATH = "C:/Users/hp/Desktop/interview/emotion_service/app/models/emotion_model.hdf5"
+MODEL_PATH = "C:/Users/rohit/Desktop/Final YEAR/Project12348/emotion_service/app/models/emotion_model.hdf5"
 
 model = tf.keras.models.load_model(MODEL_PATH, compile=False)
 

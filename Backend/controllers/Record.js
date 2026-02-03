@@ -21,7 +21,7 @@ export const QueAns = async (req, res) => {
     correctAnswer
   } = req.body
    
-  console.log(allConfindance);
+  // console.log(allConfindance);
   
   if (!userId || !question || !answer) {
     return res.status(400).json({
@@ -39,7 +39,7 @@ export const QueAns = async (req, res) => {
       user_answer: answer
     }
 
-    console.log("MOdel  ", modelPayload);
+    // console.log("MOdel  ", modelPayload);
     
 
     // 2️⃣ Send to FastAPI AI service
@@ -61,7 +61,7 @@ export const QueAns = async (req, res) => {
     }
 
     const aiResult = await response.json()
-    console.log(aiResult);
+    // console.log(aiResult);
     
 
     // 3️⃣ Store session data

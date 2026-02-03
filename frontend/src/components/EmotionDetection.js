@@ -1,9 +1,10 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 export default function CameraCapture() {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const intervalRef = useRef(null);
+  const [Emotion , setEmotion] = useState([]);
 
   useEffect(() => {
     startCamera();
@@ -44,11 +45,17 @@ export default function CameraCapture() {
     const base64Image = canvas.toDataURL("image/jpeg");
 
     try {
-      await fetch(`${process.env.REACT_APP_BACKEND}/emonation`, {
+     const resEmo = await fetch(`${process.env.REACT_APP_BACKEND}/emonation`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ image: base64Image }),
       });
+
+
+      const result = await resEmo.json();
+      console.log(result);
+      
+      setEmotion(result);
     } catch (err) {
       console.error("Upload failed", err);
     }
@@ -62,7 +69,7 @@ export default function CameraCapture() {
         autoPlay
         muted
         playsInline
-        width="640"
+        width="480"
         height="480"
         style={{ border: "1px solid black" }}
       />

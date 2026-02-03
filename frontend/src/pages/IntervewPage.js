@@ -52,7 +52,7 @@ const IntervewPage = () => {
         </div>
 
         {/* Right side: Emotion detection + Q&A */}
-        <div className="voice col-md-5">
+        <div className="voice col-md-3">
           <EmotionDetection />
           <InterviewQA topic={topic?.title} />
         </div>
