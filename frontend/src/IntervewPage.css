@@ -79,7 +79,7 @@
 /* Video inside EmotionDetection */
 .voice .video-container,
 .voice video {
-  width: 100%;
+  width: 400px;
   max-height: 300px;
   border-radius: 12px;
   object-fit: cover;

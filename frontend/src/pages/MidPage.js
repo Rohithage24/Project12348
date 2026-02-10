@@ -15,10 +15,10 @@ const MidPage = () => {
   const [history, setHistory] = useState([])
 
   useEffect(() => {
-  if (!auth.user) {
-    navigate("/", { state: { openLogin: true } });
-  }
-}, [auth, navigate]);
+    if (!auth.user) {
+      navigate('/', { state: { openLogin: true } })
+    }
+  }, [auth, navigate])
 
   useEffect(() => {
     const fetchTopic = async () => {
@@ -41,16 +41,19 @@ const MidPage = () => {
     const fetchHistory = async () => {
       try {
         // const res = await fetch(`${process.env.REACT_APP_BACKEND}/record/textRecords/${auth.user._id}`);
-        const res = await fetch(`${process.env.REACT_APP_BACKEND}/record/textRecords/${auth.user._id}`, {
-          method: 'GET',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json'
+        const res = await fetch(
+          `${process.env.REACT_APP_BACKEND}/record/textRecords/${auth.user._id}`,
+          {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json'
+            }
           }
-        })
+        )
         const data = await res.json()
-        console.log(data);
-        
+        console.log(data)
+
         setHistory(data)
       } catch (err) {
         console.error(err)
@@ -90,8 +93,7 @@ const MidPage = () => {
 
         {history && history.length > 0 ? (
           history
-            .slice(-2)
-            .reverse()
+            .slice(0, 3) // 👈 first 2 only
             .map((record, idx) => (
               <div key={idx} className='midpage-historyItem'>
                 <p>
@@ -106,7 +108,7 @@ const MidPage = () => {
                 </p>
                 <button
                   className='midpage-viewAllButton'
-                  onClick={() => navigate(`/History/${record._id}`)}
+                  onClick={() => navigate(`/History/${record.id}`)} // 👈 Prisma uses id
                 >
                   View All Scores
                 </button>

@@ -14,7 +14,14 @@ const IntervewPage = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { id } = useParams();
-
+  const [Emotion , setEmotion] = useState([]);
+  //  console.log(Emotion);
+ 
+  if(Emotion.data?.stop_interview==true){
+    console.log(Emotion.data?.stop_interview);
+        
+   
+  }
   useEffect(() => {
     if (!auth.user) navigate("/");
   }, [auth, navigate]);
@@ -53,8 +60,8 @@ const IntervewPage = () => {
 
         {/* Right side: Emotion detection + Q&A */}
         <div className="voice col-md-3">
-          <EmotionDetection />
-          <InterviewQA topic={topic?.title} />
+          <EmotionDetection sendEmotion={setEmotion}/>
+          <InterviewQA topic={topic?.title}   interviewStop={Emotion.data?.stop_interview==true} />
         </div>
       </div>
     </div>

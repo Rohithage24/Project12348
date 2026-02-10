@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 
-export default function CameraCapture() {
+export default function CameraCapture({sendEmotion}) {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const intervalRef = useRef(null);
-  const [Emotion , setEmotion] = useState([]);
+  // const [Emotion , setEmotion] = useState([]);
 
   useEffect(() => {
     startCamera();
@@ -53,9 +53,9 @@ export default function CameraCapture() {
 
 
       const result = await resEmo.json();
-      console.log(result);
+      // console.log(result);
       
-      setEmotion(result);
+      sendEmotion(result);
     } catch (err) {
       console.error("Upload failed", err);
     }

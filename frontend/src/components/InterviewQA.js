@@ -1,15 +1,17 @@
 import React, { useEffect, useState, useRef } from "react";
-import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
+import SpeechRecognition, {
+  useSpeechRecognition,
+} from "react-speech-recognition";
 import Loading from "./Loading";
 import { useAuth } from "../context/AuthProvider";
 import { useNavigate } from "react-router-dom";
 
-export default function InterviewQA({ topic }) {
+export default function InterviewQA({ topic, interviewStop }) {
   const {
     transcript,
     listening,
     resetTranscript,
-    browserSupportsSpeechRecognition
+    browserSupportsSpeechRecognition,
   } = useSpeechRecognition();
 
   const [auth] = useAuth();
@@ -23,6 +25,16 @@ export default function InterviewQA({ topic }) {
   const audioChunksRef = useRef([]);
 
   const navigate = useNavigate();
+  // console.log(interviewStop)
+
+  const submittedRef = useRef(false);
+
+  useEffect(() => {
+    if (interviewStop && !submittedRef.current) {
+      submittedRef.current = true;
+      SubmitExam();
+    }
+  }, [interviewStop]);
 
   /* ---------------- FETCH QUESTIONS ---------------- */
   useEffect(() => {
@@ -33,8 +45,8 @@ export default function InterviewQA({ topic }) {
           {
             method: "GET",
             credentials: "include",
-            headers: { "Content-Type": "application/json" }
-          }
+            headers: { "Content-Type": "application/json" },
+          },
         );
 
         const data = await response.json();
@@ -53,16 +65,17 @@ export default function InterviewQA({ topic }) {
       questions.length === 0 ||
       currentIndex >= questions.length ||
       !questions[currentIndex]?.questionText
-    ) return;
+    )
+      return;
 
     SpeechRecognition.stopListening();
     resetTranscript();
 
     const utterance = new SpeechSynthesisUtterance(
-      questions[currentIndex].questionText
+      questions[currentIndex].questionText,
     );
-     console.log(questions);
-     
+    // console.log(questions)
+
     utterance.onend = async () => {
       resetTranscript();
       setReadyForAnswer(true);
@@ -72,7 +85,7 @@ export default function InterviewQA({ topic }) {
       mediaRecorderRef.current = new MediaRecorder(stream);
       audioChunksRef.current = [];
 
-      mediaRecorderRef.current.ondataavailable = e => {
+      mediaRecorderRef.current.ondataavailable = (e) => {
         if (e.data.size > 0) audioChunksRef.current.push(e.data);
       };
 
@@ -84,114 +97,110 @@ export default function InterviewQA({ topic }) {
   }, [currentIndex, questions, resetTranscript]);
 
   /* ---------------- SUBMIT ANSWER ---------------- */
-const handleSubmit = async () => {
-  if (!transcript.trim()) return;
+  const handleSubmit = async () => {
+    if (!transcript.trim()) return;
 
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    SpeechRecognition.stopListening();
+      SpeechRecognition.stopListening();
 
-    // ✅ WAIT for recorder to stop properly
-    const audioBlob = await new Promise((resolve, reject) => {
-      if (!mediaRecorderRef.current) {
-        reject("Recorder not initialized");
-        return;
-      }
+      // ✅ WAIT for recorder to stop properly
+      const audioBlob = await new Promise((resolve, reject) => {
+        if (!mediaRecorderRef.current) {
+          reject("Recorder not initialized");
+          return;
+        }
 
-      mediaRecorderRef.current.onstop = () => {
-        const blob = new Blob(audioChunksRef.current, {
-          type: "audio/webm"
-        });
-        resolve(blob);
+        mediaRecorderRef.current.onstop = () => {
+          const blob = new Blob(audioChunksRef.current, {
+            type: "audio/webm",
+          });
+          resolve(blob);
+        };
+
+        mediaRecorderRef.current.stop();
+      });
+
+      // 🔍 DEBUG: confirm audio size
+      console.log("Audio size:", audioBlob.size); // MUST be > 0
+
+      // 📤 Send audio to FastAPI
+      const formData = new FormData();
+      formData.append("file", audioBlob, "answer.webm");
+      console.log(formData);
+
+      console.log(process.env.REACT_APP_SPEECH_CONFIDENCE);
+
+      const confidenceRes = await fetch(
+        // "http://127.0.0.1:8001/analyze-full-speech",
+        `${process.env.REACT_APP_SPEECH_CONFIDENCE}/analyze-full-speech`,
+
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
+
+      const confidenceData = await confidenceRes.json();
+      console.log("Confidence API response:", confidenceData);
+
+      const confidence = confidenceData?.overall_score ?? 0;
+      setConfidenceScore(confidence);
+
+      // ✅ FINAL PAYLOAD
+      const payload = {
+        userId: auth.user._id,
+        question: questions[currentIndex].questionText,
+        answer: transcript.trim(),
+        correctAnswer: questions[currentIndex].correctAnswer,
+        key_concepts: questions[currentIndex].key_concepts,
+        keywords: questions[currentIndex].keywords,
+        confidenceScore: confidence,
+        allConfindance: confidenceData,
       };
 
-      mediaRecorderRef.current.stop();
-    });
+      // console.log('Submitting payload:', payload)
 
-    // 🔍 DEBUG: confirm audio size
-    console.log("Audio size:", audioBlob.size); // MUST be > 0
-
-    // 📤 Send audio to FastAPI
-    const formData = new FormData();
-    formData.append("file", audioBlob, "answer.webm");
-    console.log(formData);
-
-    console.log(process.env.REACT_APP_SPEECH_CONFIDENCE);
-    
-
-    const confidenceRes = await fetch(
-      // "http://127.0.0.1:8001/analyze-full-speech",
-      `${process.env.REACT_APP_SPEECH_CONFIDENCE}/analyze-full-speech`,
-
-      {
+      await fetch("http://localhost:4000/api/record/audio-text", {
         method: "POST",
-        body: formData
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      resetTranscript();
+      setReadyForAnswer(false);
+
+      if (currentIndex + 1 < questions.length) {
+        setTimeout(() => {
+          setCurrentIndex((prev) => prev + 1);
+        }, 800);
       }
-    );
-    
-    const confidenceData = await confidenceRes.json();
-    console.log("Confidence API response:", confidenceData);
-
-    const confidence = confidenceData?.overall_score ?? 0;
-    setConfidenceScore(confidence);
-
-    // ✅ FINAL PAYLOAD
-    const payload = {
-      userId: auth.user._id,
-      question: questions[currentIndex].questionText,
-      answer: transcript.trim(),
-      correctAnswer:questions[currentIndex].correctAnswer,
-      key_concepts:questions[currentIndex].key_concepts,
-      keywords:questions[currentIndex].keywords,
-      confidenceScore: confidence,
-      allConfindance : confidenceData,
-
-    };
-
-    console.log("Submitting payload:", payload);
-
-    await fetch("http://localhost:4000/api/record/audio-text", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    resetTranscript();
-    setReadyForAnswer(false);
-
-    if (currentIndex + 1 < questions.length) {
-      setTimeout(() => {
-        setCurrentIndex(prev => prev + 1);
-      }, 800);
+    } catch (error) {
+      console.error("Failed to submit answer:", error);
+    } finally {
+      setLoading(false);
     }
-
-  } catch (error) {
-    console.error("Failed to submit answer:", error);
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   /* ---------------- FINAL SUBMIT ---------------- */
   const SubmitExam = async () => {
     await handleSubmit();
 
     try {
-       const responseEmo = await fetch(
+      const responseEmo = await fetch(
         `${process.env.REACT_APP_BACKEND}/calEmo`,
 
         {
           method: "GET",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-        }
+        },
       );
 
       const dataEmo = await responseEmo.json();
-      console.log("Emotion data ",dataEmo);
+      console.log("Emotion data ", dataEmo);
       const response = await fetch(
         `${process.env.REACT_APP_BACKEND}/record/submitExam`,
         {
@@ -201,18 +210,15 @@ const handleSubmit = async () => {
           body: JSON.stringify({
             userId: auth.user._id,
             headline: topic,
-            dataEmo :dataEmo,
-          })
-        }
+            dataEmo: dataEmo,
+          }),
+        },
       );
-
-      
 
       const data = await response.json();
       console.log(data);
 
       if (data) navigate("/score", { state: { result: data } });
-
     } catch (error) {
       console.error("Submit exam error:", error);
     }
@@ -240,7 +246,9 @@ const handleSubmit = async () => {
               <p>Your answer: {transcript}</p>
 
               {confidenceScore !== null && (
-                <p><b>Confidence Score:</b> {confidenceScore}%</p>
+                <p>
+                  <b>Confidence Score:</b> {confidenceScore}%
+                </p>
               )}
 
               {currentIndex + 1 < questions.length ? (
@@ -272,10 +280,6 @@ const handleSubmit = async () => {
   );
 }
 
-
-
-
-
 // import React, { useEffect, useState } from "react";
 // import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
 // import Loading from "./Loading";
@@ -292,7 +296,7 @@ const handleSubmit = async () => {
 //   const [readyForAnswer, setReadyForAnswer] = useState(false);
 //   const navigate = useNavigate();
 //   // console.log(auth);
-  
+
 //   // Fetch questions from backend
 //   useEffect(() => {
 //     const fetchQuestions = async () => {
@@ -302,12 +306,12 @@ const handleSubmit = async () => {
 //           method: "GET",
 //           credentials:"include",
 //           headers: { "Content-Type": "application/json" },
-          
+
 //         });
 
 //         const data = await response.json();
 //         console.log(data);
-        
+
 //         // const cleanedJson = data.reply.replace(/```json|```/g, "").trim();
 //         // const parsedQuestions = JSON.parse(cleanedJson);
 
@@ -341,7 +345,6 @@ const handleSubmit = async () => {
 //   //   window.speechSynthesis.speak(utterance);
 //   // }, [currentIndex, questions, resetTranscript]);
 
-
 //   useEffect(() => {
 //   if (
 //     questions.length === 0 ||
@@ -365,7 +368,6 @@ const handleSubmit = async () => {
 //   window.speechSynthesis.speak(utterance);
 // }, [currentIndex, questions]);
 
-
 //   // Submit answer
 //   const handleSubmit = async () => {
 //     if (!transcript.trim()) return;
@@ -380,7 +382,6 @@ const handleSubmit = async () => {
 //       };
 
 //       console.log(payload);
-      
 
 //       // await fetch(`${process.env.REACT_APP_BACKEND}/record/audio-text`, {
 //        await fetch(`http://localhost:4000/api/record/audio-text`, {
@@ -431,7 +432,7 @@ const handleSubmit = async () => {
 //       if(data){
 //         navigate('/score',{ state: { result: data } })
 //       }
-      
+
 //     } catch (error) {
 //        console.error("Error fetching questions:", error);
 //     }
@@ -482,5 +483,3 @@ const handleSubmit = async () => {
 //     </div>
 //   );
 // }
-
-

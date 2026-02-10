@@ -6,7 +6,7 @@ const Score = () => {
   const navigate = useNavigate();
 
   const results = location.state?.result?.test;
-console.log(results);
+// console.log(results);
 
   // ---------------- REMARK (BASED ON SCORE) ----------------
   const score = results?.score ?? 0;
