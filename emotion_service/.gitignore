@@ -3,3 +3,4 @@
 /venv
 /.pnp
 .pnp.js
+/__pycache__
