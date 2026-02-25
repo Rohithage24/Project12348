@@ -5,3 +5,4 @@ tensorflow
 numpy
 pillow
 python-multipart
+python-3.10.13
