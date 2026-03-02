@@ -1,4 +1,6 @@
 const recordEmo = [];
+import dotenv from 'dotenv'
+dotenv.config()
 
 export const getImage = async (req, res) => {
   try {
@@ -11,7 +13,7 @@ export const getImage = async (req, res) => {
     }
 
     // 🔁 Send to Python backend
-    const response = await fetch("http://127.0.0.1:8000/predict-emotion", {
+    const response = await fetch(`${process.env.EMOTION_AND_FACE_API}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -24,7 +26,7 @@ export const getImage = async (req, res) => {
 
     const pythonResult = await response.json();
     recordEmo.push(pythonResult.confidence_score);
-    // console.log("Python response:", pythonResult);
+    console.log("Python response:", pythonResult);
 
     res.status(200).json({
       success: true,
