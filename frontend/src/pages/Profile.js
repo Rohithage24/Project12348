@@ -1,134 +1,110 @@
-// src/pages/Profile.js
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useAuth } from "../context/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import Lottie from "lottie-react";
 import ProfileAnimation from "../animations/profile.json";
 import FemaleAvatar from "../animations/Female avatar.json";
 
-// Animated counter component
-const AnimatedNumber = ({ value, duration = 1000 }) => {
-  const [display, setDisplay] = useState(0);
+const Profile = () => {
+  const [auth] = useAuth();
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    let start = 0;
-    const increment = value / (duration / 50);
-    const interval = setInterval(() => {
-      start += increment;
-      if (start >= value) {
-        start = value;
-        clearInterval(interval);
-      }
-      setDisplay(Math.round(start));
-    }, 50);
-    return () => clearInterval(interval);
-  }, [value, duration]);
-
-  return <span>{display}</span>;
-};
-
-const CircularRing = ({ label, value, max, color, emoji }) => {
-  const radius = 90;
-  const stroke = 15;
-  const normalizedRadius = radius - stroke * 2;
-  const circumference = normalizedRadius * 2 * Math.PI;
-  const strokeDashoffset = circumference - (value / max) * circumference;
+  const animationData = auth?.user?.gender === "female" ? FemaleAvatar : ProfileAnimation;
+  const total = auth?.user?.stats?.total || 10;
+  const correct = auth?.user?.stats?.correct || 6;
+  const incorrect = auth?.user?.stats?.incorrect || 3;
+  const accuracy = ((correct / total) * 100).toFixed(0);
 
   return (
-    <div className="profile-ring">
-      <svg height={radius * 2} width={radius * 2}>
-        <circle
-          className="profile-ring-bg"
-          stroke="#eee"
-          fill="transparent"
-          strokeWidth={stroke}
-          r={normalizedRadius}
-          cx={radius}
-          cy={radius}
-        />
-        <circle
-          className="profile-ring-progress"
-          stroke={color}
-          fill="transparent"
-          strokeWidth={stroke}
-          strokeDasharray={`${circumference} ${circumference}`}
-          style={{
-            strokeDashoffset,
-            transition: "stroke-dashoffset 1.2s ease",
-            transform: "rotate(-90deg)",
-            transformOrigin: "50% 50%",
-          }}
-          r={normalizedRadius}
-          cx={radius}
-          cy={radius}
-        />
-      </svg>
-      <div className="profile-ring-label">
-        {emoji} {label}: <AnimatedNumber value={value} /> / {max}
+    <div className="dashboard-container">
+      <header className="dashboard-header-row" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+        <div>
+          <h1 style={{ margin: 0 }}>Dashboard</h1>
+          <p style={{ color: 'var(--text-dim)', margin: '5px 0 0 0' }}>Track your progress and achievements</p>
+        </div>
+        <button className="cta-btn" style={{ padding: '10px 25px' }} onClick={() => navigate("/settings")}>Edit Profile</button>
+      </header>
+
+      <div className="dashboard-header-row">
+        {/* SIDEBAR / PROFILE CARD */}
+        <div className="user-profile-card">
+          <div className="avatar-wrapper" style={{ width: '120px', margin: '0 auto' }}>
+            <Lottie animationData={animationData} loop={true} />
+          </div>
+          <div style={{ textAlign: 'center', marginTop: '15px' }}>
+            <h2 style={{ margin: 0 }}>{auth?.user?.Name || "User"}</h2>
+            <p style={{ color: 'var(--accent-blue)', fontWeight: 'bold' }}>Pro Member</p>
+          </div>
+          <div className="info-list" style={{ marginTop: '20px', fontSize: '0.9rem', lineHeight: '2' }}>
+            <p style={{ margin: 0 }}>📍 {auth?.user?.address || "N/A"}</p>
+            <p style={{ margin: 0 }}>📧 {auth?.user?.gmail || "N/A"}</p>
+            <p style={{ margin: 0 }}>📱 {auth?.user?.mobile || "N/A"}</p>
+          </div>
+          
+          <div style={{ marginTop: '25px', padding: '15px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px' }}>
+            <h3 style={{ margin: '0 0 10px 0', fontSize: '0.9rem' }}>Streak</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px' }}>
+               {[...Array(21)].map((_, i) => (
+                <div key={i} style={{ height: '8px', borderRadius: '4px', background: i < 12 ? 'var(--accent-blue)' : 'rgba(255,255,255,0.1)' }}></div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* STATS AREA */}
+        <div className="dashboard-stats-container">
+          <div className="dashboard-stats">
+            <div className="dashboard-stat">
+              <span style={{ fontSize: '1.8rem', fontWeight: '900' }}>{total}</span>
+              <p>Total Questions</p>
+            </div>
+            <div className="dashboard-stat" style={{ borderLeft: '3px solid #4ade80' }}>
+              <span style={{ fontSize: '1.8rem', fontWeight: '900', color: '#4ade80' }}>{correct}</span>
+              <p>Correct</p>
+            </div>
+            <div className="dashboard-stat" style={{ borderLeft: '3px solid #f87171' }}>
+              <span style={{ fontSize: '1.8rem', fontWeight: '900', color: '#f87171' }}>{incorrect}</span>
+              <p>Incorrect</p>
+            </div>
+            <div className="dashboard-stat" style={{ borderLeft: '3px solid var(--accent-blue)' }}>
+              <span style={{ fontSize: '1.8rem', fontWeight: '900', color: 'var(--accent-blue)' }}>{accuracy}%</span>
+              <p>Avg Accuracy</p>
+            </div>
+          </div>
+
+          <div className="progress-charts-section" style={{ marginTop: '20px' }}>
+            <h3 style={{ margin: '0 0 20px 0' }}>Current Progress</h3>
+            <div className="progress-charts-grid">
+              <ProgressRing value={correct} max={total} label="Correct" color="#4ade80" />
+              <ProgressRing value={incorrect} max={total} label="Incorrect" color="#f87171" />
+              <ProgressRing value={accuracy} max={100} label="Accuracy" color="#60a5fa" />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
-const Profile = () => {
-  const [auth] = useAuth();
-  const navigate = useNavigate();
-
-  const handleEditProfile = () => navigate("/settings");
-
-  const animationData =
-    auth?.user?.gender === "female" ? FemaleAvatar : ProfileAnimation;
-
-  const totalQuestions = auth?.user?.stats?.total || 10;
-  const correct = auth?.user?.stats?.correct || 6;
-  const incorrect = auth?.user?.stats?.incorrect || 3;
-  const unattempted = totalQuestions - correct - incorrect;
+const ProgressRing = ({ value, max, label, color }) => {
+  const r = 40;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (value / max) * circ;
 
   return (
-    <div className="profile-container">
-      {/* Sidebar */}
-      <div className="profile-sidebar">
-        <div className="profile-animation">
-          <Lottie animationData={animationData} loop={true} />
-        </div>
-
-        <h1 className="profile-title">Hi, {auth?.user?.Name || "User"}!</h1>
-        <h2 className="profile-subtitle">Your Profile</h2>
-
-        <div className="profile-details">
-          <p><strong>Name:</strong> {auth?.user?.Name || "N/A"}</p>
-          <p><strong>Address:</strong> {auth?.user?.address || "N/A"}</p>
-          <p><strong>Email:</strong> {auth?.user?.gmail || "N/A"}</p>
-          <p><strong>Mobile:</strong> {auth?.user?.mobile || "N/A"}</p>
-        </div>
-
-        <button className="profile-editButton" onClick={handleEditProfile}>
-          Edit Profile
-        </button>
-      </div>
-
-      {/* Dashboard */}
-      <div className="profile-dashboard">
-        <h1 className="profile-dashboard-heading">📊 Your Dashboard</h1>
-
-        <div className="profile-statsRow">
-          <div className="profile-card correct-card">✅ Correct <br /> <AnimatedNumber value={correct} /></div>
-          <div className="profile-card incorrect-card">❌ Incorrect <br /> <AnimatedNumber value={incorrect} /></div>
-          <div className="profile-card unattempted-card">⚪ Unattempted <br /> <AnimatedNumber value={unattempted} /></div>
-        </div>
-
-        <div className="profile-ringsRow">
-          <CircularRing label="Correct" value={correct} max={totalQuestions} color="#4caf50" emoji="✅" />
-          <CircularRing label="Incorrect" value={incorrect} max={totalQuestions} color="#f44336" emoji="❌" />
-          <CircularRing label="Unattempted" value={unattempted} max={totalQuestions} color="#ff9800" emoji="⚪" />
-        </div>
-
-        <div className="profile-extraInfo">
-          <div className="profile-infoCard hotstreak-card">🔥 Hot Streak: 5 Correct!</div>
-          <div className="profile-infoCard highscore-card">🏆 Highest Score: 9/10</div>
-          <div className="profile-infoCard accuracy-card">🎯 Accuracy: {((correct / totalQuestions) * 100).toFixed(1)}%</div>
+    <div className="chart-item">
+      <div className="dashboard-chart" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <svg width="120" height="120" style={{ transform: 'rotate(-90deg)' }}>
+          <circle cx="60" cy="60" r={r} stroke="rgba(255,255,255,0.1)" strokeWidth="8" fill="none" />
+          <circle cx="60" cy="60" r={r} stroke={color} strokeWidth="8" fill="none" 
+            strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round" 
+            style={{ transition: 'stroke-dashoffset 0.5s ease' }} />
+        </svg>
+        <div style={{ position: 'absolute', fontSize: '1.2rem', fontWeight: '800', color: '#fff' }}>
+          {value}{max === 100 ? '%' : ''}
         </div>
       </div>
+      <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)', marginTop: '5px' }}>{label}</p>
     </div>
   );
 };

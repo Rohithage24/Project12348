@@ -1,4 +1,3 @@
-// src/pages/About.js
 import React from 'react';
 import Lottie from 'lottie-react';
 import aboutAnimation from '../animations/about.json';
@@ -22,7 +21,7 @@ const About = () => {
       {/* Hero Section */}
       <div className="about-hero">
         <div className="about-text-content">
-          <h1 className="about-heading">About Interview Prep</h1>
+          <h1 className="about-heading">About <span className="highlight">Interview Prep</span></h1>
           <p className="about-subtext">
             Empowering developers to master technical interviews with confidence.
           </p>
@@ -38,6 +37,7 @@ const About = () => {
         <div className="about-card-container">
           {features.map((feature, idx) => (
             <div key={idx} className="about-card">
+              <div className="about-card-glow"></div>
               <div className="about-card-icon">{feature.icon}</div>
               <h3 className="about-card-title">{feature.title}</h3>
               <p className="about-card-text">{feature.text}</p>
@@ -52,8 +52,9 @@ const About = () => {
         <div className="about-timeline">
           {journey.map((step, idx) => (
             <div key={idx} className="about-timeline-item">
+              <div className="about-timeline-connector"></div>
               <div className="about-timeline-circle">{idx + 1}</div>
-              <div>
+              <div className="about-timeline-content">
                 <h4>{step.title}</h4>
                 <p>{step.desc}</p>
               </div>
@@ -64,11 +65,13 @@ const About = () => {
 
       {/* Call-to-Action */}
       <div className="about-cta-section">
-        <h2 className="about-cta-heading">Ready to Start?</h2>
-        <p className="about-cta-text">
-          Join us today and prepare to ace your interviews like a pro.
-        </p>
-        <button className="about-cta-button">Get Started</button>
+        <div className="cta-glass-card">
+          <h2 className="about-cta-heading">Ready to Start?</h2>
+          <p className="about-cta-text">
+            Join us today and prepare to ace your interviews like a pro.
+          </p>
+          <button className="about-cta-button">Get Started ⚡</button>
+        </div>
       </div>
     </div>
   );

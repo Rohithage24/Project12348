@@ -6,7 +6,6 @@ const Score = () => {
   const navigate = useNavigate();
 
   const results = location.state?.result?.test;
-// console.log(results);
 
   // ---------------- REMARK (BASED ON SCORE) ----------------
   const score = results?.score ?? 0;
@@ -98,122 +97,126 @@ const Score = () => {
     }
   }
 
-  // ---------------- SAFE EARLY RETURN ----------------
   if (!results) {
     return (
-      <div className="score-container">
-        <h2>No Score Data Found</h2>
-        <button onClick={() => navigate("/")}>Go Back</button>
+      <div className="score-container error-view">
+        <div className="glass-card text-center">
+          <h2 className="text-white">No Score Data Found</h2>
+          <button className="cosmic-btn mt-3" onClick={() => navigate("/")}>Go Back</button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="score-container">
-      <h1 className="score-heading">📊 Interview Results</h1>
+    <div className="score-page-wrapper">
+      <div className="score-container">
+        <h1 className="score-heading">📊 Performance Report</h1>
 
-      {/* SUMMARY */}
-      <div className="score-summaryCard">
-        <h2>{results.headline || "Unknown Topic"}</h2>
-
-        <div className="score-summaryMeta">
-          <div className="score-summaryBox">
-            Score: {results.score ?? "N/A"}
+        {/* TOP SUMMARY CARD */}
+        <div className="score-summaryCard glass-panel">
+          <div className="summary-header">
+            <h2 className="topic-title">{results.headline || "Unknown Topic"}</h2>
+            <div className="main-score-circle">
+               <span className="score-number">{results.score ?? "0"}</span>
+               <span className="score-label">OVERALL</span>
+            </div>
           </div>
-          <div className="score-summaryBox">
-            Date: {results.date ? new Date(results.date).toLocaleString() : "N/A"}
+          <p className="score-date">📅 {results.date ? new Date(results.date).toLocaleString() : "N/A"}</p>
+        </div>
+
+        {/* AI FEEDBACK BOX */}
+        <div className="score-remarkBox glass-panel ai-glow">
+          <div className="ai-icon">🤖 AI Analysis:</div>
+          <p className="typed-text">{typedRemark}<span className="cursor">|</span></p>
+        </div>
+
+        {/* DETAILED ANALYSIS SECTION */}
+        <div className="score-overallSection">
+          <h2 className="section-title">📈 Metric Breakdown</h2>
+          <div className="score-overallGrid">
+            
+            <div className="score-overallBox glass-panel">
+              <p className="metric-name">😐 Face confidence</p>
+              <h3 className="metric-value">{results.emotion ?? 0}%</h3>
+              <div className="score-progressBar">
+                <div className="score-progressFill" style={{ width: `${results.emotion ?? 0}%` }}></div>
+              </div>
+            </div>
+
+            <div className="score-overallBox glass-panel">
+              <p className="metric-name">🎤 Voice Confidence</p>
+              <h3 className="metric-value">{overallVoiceConfidence ?? 0}%</h3>
+              <div className="score-progressBar">
+                <div className="score-progressFill voice-fill" style={{ width: `${overallVoiceConfidence ?? 0}%` }}></div>
+              </div>
+              <p className="metric-remark">{voiceRemark}</p>
+            </div>
+
+            <div className="score-overallBox glass-panel">
+              <p className="metric-name">⚡ Response Efficiency</p>
+              <h3 className="metric-value">{overallEfficiency ?? 0}%</h3>
+              <div className="score-progressBar">
+                <div className="score-progressFill eff-fill" style={{ width: `${overallEfficiency ?? 0}%` }}></div>
+              </div>
+              <p className="metric-remark">{efficiencyRemark}</p>
+            </div>
+
           </div>
         </div>
-      </div>
 
-      {/* AI TYPING REMARK */}
-      <div className="score-remarkBox">
-        🤖 {typedRemark}
-      </div>
-
-      {/* QUESTIONS */}
+        {/* QUESTIONS REVIEW SECTION */}
       {results.questions?.length > 0 && (
-        <div className="score-card">
-          <h3 className="score-subHeading">Question Breakdown</h3>
+        <div className="score-details-wrapper">
+          <div className="section-divider">
+            <span className="divider-line"></span>
+            <h3 className="section-title">Deep Dive Review</h3>
+            <span className="divider-line"></span>
+          </div>
 
-          <ul className="score-questionList">
+          <div className="score-question-grid">
             {results.questions.map((q, idx) => (
-              <li key={idx} className="score-questionItem">
-                <p className="score-label">Question:</p>
-                <p>{q.questionText}</p>
-
-                <p className="score-label">Your Answer:</p>
-                <div className="score-answerBox">{q.userAnswer}</div>
-
-                <p className="score-label">Correct Answer:</p>
-                <div className="score-correctBox">{q.correctAnswer}</div>
-
-                {/* Only Accuracy + Overall Speech Confidence */}
-                <div className="score-miniStats">
-                  <div className="score-miniBox">
-                    🎯 Accuracy: {q.accuracy ?? "N/A"}%
-                  </div>
-                  <div className="score-miniBox">
-                    🎤 Speech Confidence: {q.ConfidenceScore ?? "N/A"}%
+              <div key={idx} className="score-q-card glass-panel">
+                
+                {/* Header: Question Number & Accuracy Badge */}
+                <div className="q-card-header">
+                  <div className="q-number-circle">{idx + 1}</div>
+                  <div className="q-stats-row">
+                    <span className="stat-badge accuracy">
+                      <i className="icon-target"></i> {q.accuracy ?? 0}% Accuracy
+                    </span>
+                    <span className="stat-badge speech">
+                      <i className="icon-mic"></i> {q.ConfidenceScore ?? 0}% Confidence
+                    </span>
                   </div>
                 </div>
-              </li>
+
+                <h4 className="q-text-display">{q.questionText}</h4>
+
+                <div className="comparison-container">
+                  {/* User Answer Block */}
+                  <div className="comparison-box user-side">
+                    <label className="box-label">Your Response</label>
+                    <p className="box-content">{q.userAnswer || "No answer recorded."}</p>
+                  </div>
+
+                  {/* Correct Answer Block */}
+                  <div className="comparison-box mentor-side">
+                    <label className="box-label">Expert Reference</label>
+                    <p className="box-content">{q.correctAnswer}</p>
+                  </div>
+                </div>
+
+                {/* Optional: Visual separator for the next card */}
+                <div className="card-footer-glow"></div>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
-
-      {/* OVERALL ANALYSIS */}
-      <div className="score-overallSection">
-        <h2>📈 Overall Performance Analysis</h2>
-
-        <div className="score-overallGrid">
-          <div className="score-overallBox">
-            😐 Face Confidence
-            <br />
-            {results.emotion !== null && (
-              <div
-                className="score-progressBar"
-                style={{ "--target-width": `${results.emotion}%` }}
-              >
-                <div className="score-progressFill"></div>
-              </div>
-            )}
-          </div>
-
-          <div className="score-overallBox">
-            🎤 Overall Voice Confidence
-            <br />
-            {overallVoiceConfidence !== null ? `${overallVoiceConfidence}%` : "N/A"}
-
-            {overallVoiceConfidence !== null && (
-              <div
-                className="score-progressBar"
-                style={{ "--target-width": `${overallVoiceConfidence}%` }}
-              >
-                <div className="score-progressFill"></div>
-              </div>
-            )}
-
-            <p>{voiceRemark}</p>
-          </div>
-
-          <div className="score-overallBox">
-            ⚡ Overall Efficiency
-            <br />
-            {overallEfficiency !== null ? `${overallEfficiency}%` : "N/A"}
-
-            {overallEfficiency !== null && (
-              <div
-                className="score-progressBar"
-                style={{ "--target-width": `${overallEfficiency}%` }}
-              >
-                <div className="score-progressFill"></div>
-              </div>
-            )}
-
-            <p>{efficiencyRemark}</p>
-          </div>
+        
+        <div className="footer-actions">
+           <button className="cosmic-btn primary" onClick={() => navigate("/")}>Return Home</button>
         </div>
       </div>
     </div>

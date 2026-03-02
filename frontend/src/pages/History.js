@@ -1,7 +1,7 @@
-// src/pages/History.js
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
-import "./History.css";
+import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
 
 const History = () => {
   const { id } = useParams();
@@ -21,120 +21,101 @@ const History = () => {
     fetchHistory();
   }, [id]);
 
-  if (!data) return <div className="history-loading">Loading...</div>;
+  if (!data) return <div className="history-loading">Gathering Intelligence...</div>;
 
   const correctCount = data.questions.filter(q => q.QuesScore >= 60).length;
-
-  const accuracy =
-    Math.round(
-      data.questions.reduce((a, q) => a + (q.accuracy || 0), 0) /
-        data.questions.length
-    ) || 0;
-
-  const avgConfidence =
-    Math.round(
-      data.questions.reduce((a, q) => a + (q.ConfidenceScore || 0), 0) /
-        data.questions.length
-    ) || 0;
+  const accuracy = Math.round(data.questions.reduce((a, q) => a + (q.accuracy || 0), 0) / data.questions.length) || 0;
+  const avgConfidence = Math.round(data.questions.reduce((a, q) => a + (q.ConfidenceScore || 0), 0) / data.questions.length) || 0;
 
   const handlePrint = () => window.print();
 
   return (
-    <div className="assessment-container">
+    <div className="dashboard-container history-page">
       {/* ACTION BAR */}
-      <div className="history-actionBar">
-        <button className="history-btn primary" onClick={handlePrint}>
-          🖨 Print / Download Report
+      <div className="history-header-row" style={{justifyContent: 'space-between', marginBottom: '30px'}}>
+        <div>
+          <span className="badge-ai">Assessment ID: #{id?.slice(-6)}</span>
+          <h1 style={{marginTop: '10px'}}>{data.headline} Report</h1>
+          <p style={{color: 'var(--text-dim)'}}>{new Date(data.date).toLocaleDateString()} • {new Date(data.date).toLocaleTimeString()}</p>
+        </div>
+        <button className="cta-btn" onClick={handlePrint}>
+          <span>📥 Download PDF</span>
         </button>
       </div>
 
-      {/* PRINTABLE REPORT */}
-      <div ref={reportRef}>
-        {/* HEADER */}
-        <div className="assessment-header">
-          <span className="badge">Interview Complete</span>
-          <h1>{data.headline} Assessment</h1>
-          <p>{new Date(data.date).toLocaleString()}</p>
+      <div ref={reportRef} className="printable-content">
+        {/* TOP STATS GRID */}
+        <div className="dashboard-stats" style={{marginBottom: '40px'}}>
+           <div className="dashboard-stat">
+             <div style={{width: 80, height: 80, margin: '0 auto 10px'}}>
+               <CircularProgressbar 
+                  value={data.score} 
+                  text={`${Math.round(data.score)}%`} 
+                  styles={buildStyles({ pathColor: 'var(--accent-blue)', textColor: '#fff', trailColor: 'rgba(255,255,255,0.1)' })}
+               />
+             </div>
+             <p>Overall Score</p>
+           </div>
+           
+           <div className="dashboard-stat" style={{borderLeft: '2px solid var(--accent-purple)'}}>
+             <h3>{accuracy}%</h3>
+             <p>Accuracy</p>
+           </div>
+
+           <div className="dashboard-stat" style={{borderLeft: '2px solid #4ade80'}}>
+             <h3>{data.emotion}%</h3>
+             <p>Emotional IQ</p>
+           </div>
+
+           <div className="dashboard-stat" style={{borderLeft: '2px solid #facc15'}}>
+             <h3>{avgConfidence}%</h3>
+             <p>Confidence</p>
+           </div>
         </div>
 
-        {/* SCORE SECTION */}
-        <div className="assessment-scoreSection">
-          <div className="circle-score">
-            <svg>
-              <circle cx="70" cy="70" r="60" />
-              <circle
-                cx="70"
-                cy="70"
-                r="60"
-                style={{
-                  strokeDasharray: 377,
-                  strokeDashoffset: 377 - (377 * data.score) / 100
-                }}
-              />
-            </svg>
-            <div className="circle-text">
-              <h2>{Math.round(data.score)}%</h2>
-              <span>Overall Score</span>
-            </div>
-          </div>
-
-          <div className="stat-cards">
-            <div className="stat-card danger">
-              <span>Needs Improvement</span>
-              <h3>{accuracy}%</h3>
-              <p>Accuracy</p>
-            </div>
-
-            <div className="stat-card success">
-              <span>Good</span>
-              <h3>{data.emotion}%</h3>
-              <p>Emotional IQ</p>
-            </div>
-
-            <div className="stat-card success">
-              <span>Good</span>
-              <h3>{avgConfidence}%</h3>
-              <p>Avg Confidence</p>
-            </div>
-          </div>
+        <div className="glass-card" style={{padding: '20px', textAlign: 'center', marginBottom: '30px', background: 'rgba(255,255,255,0.02)'}}>
+           <p style={{margin: 0, fontSize: '1.1rem'}}>
+             Performance Analysis: <span style={{color: 'var(--accent-blue)'}}>{correctCount} / {data.questions.length}</span> questions cleared the benchmark.
+           </p>
         </div>
 
-        <p className="answered-text">
-          You answered {correctCount} out of {data.questions.length} questions correctly
-        </p>
-
-        {/* QUESTION LIST */}
+        {/* ACCORDION QUESTIONS */}
         <div className="question-section">
-          <h2>Question Breakdown</h2>
-
+          <h2 style={{marginBottom: '20px', fontSize: '1.4rem'}}>Detailed Breakdown</h2>
+          
           {data.questions.map((q, i) => {
             const isCorrect = q.QuesScore >= 60;
             return (
-              <div key={i} className="question-card">
-                <div
-                  className="question-header"
-                  onClick={() => setOpenIndex(openIndex === i ? null : i)}
-                >
-                  <div className="question-left">
-                    <span className="q-index">{i + 1}</span>
-                    <span>{q.questionText}</span>
+              <div key={i} className={`history-card ${openIndex === i ? 'open' : ''}`}>
+                <div className="history-card-header" onClick={() => setOpenIndex(openIndex === i ? null : i)}>
+                  <div className="q-info">
+                    <span className="q-number">{i + 1}</span>
+                    <span className="q-text">{q.questionText}</span>
                   </div>
-
-                  <div className="question-right">
-                    <span className={`status ${isCorrect ? "correct" : "incorrect"}`}>
-                      {isCorrect ? "Correct" : "Incorrect"}
+                  <div className="q-status-group">
+                    <span className={`status-tag ${isCorrect ? 'pass' : 'fail'}`}>
+                      {isCorrect ? "PASS" : "FAIL"}
                     </span>
-                    <span className="percent">{q.QuesScore}%</span>
-                    <span className="arrow">{openIndex === i ? "▲" : "▼"}</span>
+                    <span className="arrow-icon">{openIndex === i ? "▲" : "▼"}</span>
                   </div>
                 </div>
 
                 {openIndex === i && (
-                  <div className="question-body">
-                    <p><b>Your Answer:</b> {q.userAnswer}</p>
-                    <p><b>Correct Answer:</b> {q.correctAnswer}</p>
-                    <p><b>Accuracy:</b> {q.accuracy}%</p>
-                    <p><b>Confidence:</b> {q.ConfidenceScore}%</p>
+                  <div className="history-card-body animate-fade">
+                    <div className="answer-grid">
+                      <div className="answer-box">
+                        <label>Your Response</label>
+                        <p>{q.userAnswer}</p>
+                      </div>
+                      <div className="answer-box highlight">
+                        <label>Expected Logic</label>
+                        <p>{q.correctAnswer}</p>
+                      </div>
+                    </div>
+                    <div className="mini-metrics">
+                       <span>Accuracy: <b>{q.accuracy}%</b></span>
+                       <span>Confidence: <b>{q.ConfidenceScore}%</b></span>
+                    </div>
                   </div>
                 )}
               </div>

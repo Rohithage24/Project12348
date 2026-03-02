@@ -25,10 +25,9 @@ export default function InterviewQA({ topic, interviewStop }) {
   const audioChunksRef = useRef([]);
 
   const navigate = useNavigate();
-  // console.log(interviewStop)
-
   const submittedRef = useRef(false);
 
+  /* ---------------- LOGIC REMAINS UNTOUCHED ---------------- */
   useEffect(() => {
     if (interviewStop && !submittedRef.current) {
       submittedRef.current = true;
@@ -36,7 +35,6 @@ export default function InterviewQA({ topic, interviewStop }) {
     }
   }, [interviewStop]);
 
-  /* ---------------- FETCH QUESTIONS ---------------- */
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
@@ -46,20 +44,17 @@ export default function InterviewQA({ topic, interviewStop }) {
             method: "GET",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
-          },
+          }
         );
-
         const data = await response.json();
         setQuestions(data);
       } catch (error) {
         console.error("Error fetching questions:", error);
       }
     };
-
     fetchQuestions();
   }, [topic]);
 
-  /* ---------------- SPEAK QUESTION + START RECORDING ---------------- */
   useEffect(() => {
     if (
       questions.length === 0 ||
@@ -72,23 +67,18 @@ export default function InterviewQA({ topic, interviewStop }) {
     resetTranscript();
 
     const utterance = new SpeechSynthesisUtterance(
-      questions[currentIndex].questionText,
+      questions[currentIndex].questionText
     );
-    // console.log(questions)
 
     utterance.onend = async () => {
       resetTranscript();
       setReadyForAnswer(true);
-
-      // 🎙️ Start audio recording
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorderRef.current = new MediaRecorder(stream);
       audioChunksRef.current = [];
-
       mediaRecorderRef.current.ondataavailable = (e) => {
         if (e.data.size > 0) audioChunksRef.current.push(e.data);
       };
-
       mediaRecorderRef.current.start();
       SpeechRecognition.startListening({ continuous: true });
     };
@@ -96,59 +86,40 @@ export default function InterviewQA({ topic, interviewStop }) {
     window.speechSynthesis.speak(utterance);
   }, [currentIndex, questions, resetTranscript]);
 
-  /* ---------------- SUBMIT ANSWER ---------------- */
   const handleSubmit = async () => {
     if (!transcript.trim()) return;
-
     try {
       setLoading(true);
-
       SpeechRecognition.stopListening();
-
-      // ✅ WAIT for recorder to stop properly
       const audioBlob = await new Promise((resolve, reject) => {
         if (!mediaRecorderRef.current) {
           reject("Recorder not initialized");
           return;
         }
-
         mediaRecorderRef.current.onstop = () => {
           const blob = new Blob(audioChunksRef.current, {
             type: "audio/webm",
           });
           resolve(blob);
         };
-
         mediaRecorderRef.current.stop();
       });
 
-      // 🔍 DEBUG: confirm audio size
-      console.log("Audio size:", audioBlob.size); // MUST be > 0
-
-      // 📤 Send audio to FastAPI
       const formData = new FormData();
       formData.append("file", audioBlob, "answer.webm");
-      console.log(formData);
-
-      console.log(process.env.REACT_APP_SPEECH_CONFIDENCE);
 
       const confidenceRes = await fetch(
-        // "http://127.0.0.1:8001/analyze-full-speech",
         `${process.env.REACT_APP_SPEECH_CONFIDENCE}/analyze-full-speech`,
-
         {
           method: "POST",
           body: formData,
-        },
+        }
       );
 
       const confidenceData = await confidenceRes.json();
-      console.log("Confidence API response:", confidenceData);
-
       const confidence = confidenceData?.overall_score ?? 0;
       setConfidenceScore(confidence);
 
-      // ✅ FINAL PAYLOAD
       const payload = {
         userId: auth.user._id,
         question: questions[currentIndex].questionText,
@@ -159,8 +130,6 @@ export default function InterviewQA({ topic, interviewStop }) {
         confidenceScore: confidence,
         allConfindance: confidenceData,
       };
-
-      // console.log('Submitting payload:', payload)
 
       await fetch("http://localhost:4000/api/record/audio-text", {
         method: "POST",
@@ -184,23 +153,18 @@ export default function InterviewQA({ topic, interviewStop }) {
     }
   };
 
-  /* ---------------- FINAL SUBMIT ---------------- */
   const SubmitExam = async () => {
     await handleSubmit();
-
     try {
       const responseEmo = await fetch(
         `${process.env.REACT_APP_BACKEND}/calEmo`,
-
         {
           method: "GET",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-        },
+        }
       );
-
       const dataEmo = await responseEmo.json();
-      console.log("Emotion data ", dataEmo);
       const response = await fetch(
         `${process.env.REACT_APP_BACKEND}/record/submitExam`,
         {
@@ -212,12 +176,9 @@ export default function InterviewQA({ topic, interviewStop }) {
             headline: topic,
             dataEmo: dataEmo,
           }),
-        },
+        }
       );
-
       const data = await response.json();
-      console.log(data);
-
       if (data) navigate("/score", { state: { result: data } });
     } catch (error) {
       console.error("Submit exam error:", error);
@@ -225,54 +186,69 @@ export default function InterviewQA({ topic, interviewStop }) {
   };
 
   if (!browserSupportsSpeechRecognition) {
-    return <span>Browser doesn’t support speech recognition.</span>;
+    return <span className="error-text">Speech recognition not supported.</span>;
   }
 
-  /* ---------------- UI ---------------- */
+  /* ---------------- NEW COSMIC UI ---------------- */
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Interview Q&A</h1>
+    <div className="qa-terminal">
+      <div className="qa-status-bar">
+        <span className="qa-badge">LIVE INTERVIEW</span>
+        <span className="qa-step">STEP {currentIndex + 1} OF {questions.length}</span>
+      </div>
 
       {questions.length > 0 && currentIndex < questions.length ? (
-        <>
-          <p>
-            Question {currentIndex + 1} of {questions.length}
-          </p>
-          <strong>{questions[currentIndex]?.questionText}</strong>
+        <div className="qa-content">
+          <h2 className="qa-question-text">
+            {questions[currentIndex]?.questionText}
+          </h2>
 
-          {readyForAnswer && (
-            <div style={{ marginTop: "20px" }}>
-              <p>Microphone: {listening ? "ON 🎙️" : "OFF"}</p>
-              <p>Your answer: {transcript}</p>
-
-              {confidenceScore !== null && (
-                <p>
-                  <b>Confidence Score:</b> {confidenceScore}%
-                </p>
-              )}
-
-              {currentIndex + 1 < questions.length ? (
-                <button
-                  className="btn btn-primary"
-                  onClick={handleSubmit}
-                  disabled={loading}
-                >
-                  {loading ? "Analyzing..." : "Submit Answer"}
-                </button>
-              ) : (
-                <button
-                  className="btn btn-success"
-                  onClick={SubmitExam}
-                  disabled={loading}
-                >
-                  {loading ? "Finishing..." : "Complete Interview"}
-                </button>
-              )}
+          <div className={`qa-voice-panel ${listening ? "active" : ""}`}>
+            <div className="wave-container">
+              {listening && <div className="wave-animation"></div>}
+              <span className="mic-status">
+                {listening ? "🎙️ System Listening..." : "🔇 Mic Standby"}
+              </span>
             </div>
-          )}
-        </>
+            
+            <div className="transcript-box">
+              <p className="transcript-label">Live Transcript:</p>
+              <p className="transcript-text">{transcript || "Waiting for your voice..."}</p>
+            </div>
+
+            {confidenceScore !== null && (
+              <div className="confidence-meter">
+                <span>Confidence: </span>
+                <span className="confidence-value">{confidenceScore}%</span>
+              </div>
+            )}
+          </div>
+
+          <div className="qa-actions">
+            {currentIndex + 1 < questions.length ? (
+              <button
+                className="qa-btn qa-btn-primary"
+                onClick={handleSubmit}
+                disabled={loading || !transcript.trim()}
+              >
+                {loading ? <span className="loader-dots">Analyzing Answer</span> : "Submit & Next Question"}
+              </button>
+            ) : (
+              <button
+                className="qa-btn qa-btn-success"
+                onClick={SubmitExam}
+                disabled={loading}
+              >
+                {loading ? "Finalizing Result..." : "Finish Interview"}
+              </button>
+            )}
+          </div>
+        </div>
       ) : questions.length > 0 && currentIndex >= questions.length ? (
-        <p>✅ Interview complete!</p>
+        <div className="qa-complete">
+          <h3>✅ Session Verified</h3>
+          <p>Processing your interview data...</p>
+        </div>
       ) : (
         <Loading />
       )}

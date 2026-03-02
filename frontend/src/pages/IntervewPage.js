@@ -4,9 +4,7 @@ import { useAuth } from "../context/AuthProvider";
 import EmotionDetection from "../components/EmotionDetection";
 import InterviewQA from "../components/InterviewQA";
 import Loading from "../components/Loading";
-import Lottie from "lottie-react";
-import assistantAnimation from "../animations/assistant2.json"; // Lottie JSON
-import "../IntervewPage.css"; // <-- CSS directly under src
+import "../IntervewPage.css";
 
 const IntervewPage = () => {
   const [auth] = useAuth();
@@ -14,14 +12,10 @@ const IntervewPage = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { id } = useParams();
-  const [Emotion , setEmotion] = useState([]);
-  //  console.log(Emotion);
- 
-  if(Emotion.data?.stop_interview==true){
-    console.log(Emotion.data?.stop_interview);
-        
-   
-  }
+
+  const [Emotion, setEmotion] = useState({});
+  const [warningMessage, setWarningMessage] = useState("");
+
   useEffect(() => {
     if (!auth.user) navigate("/");
   }, [auth, navigate]);
@@ -31,9 +25,11 @@ const IntervewPage = () => {
       try {
         const response = await fetch(
           `${process.env.REACT_APP_BACKEND}/topic/topicone/${id}`,
-          { method: "GET", 
-             credentials: 'include',
-            headers: { "Content-Type": "application/json" } }
+          {
+            method: "GET",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+          }
         );
         const data = await response.json();
         setTopic(data);
@@ -46,22 +42,51 @@ const IntervewPage = () => {
     fetchTopic();
   }, [id]);
 
-  if (loading) return <h2><Loading /></h2>;
-  if (!topic) return <h2>No topic found</h2>;
+  useEffect(() => {
+    if (Emotion?.data?.warning_count === 1) {
+      setWarningMessage("⚠️ Multiple face detected. You have 2 chances left.");
+    } 
+    else if (Emotion?.data?.warning_count === 2) {
+      setWarningMessage(
+        "🚨 Final warning: Multiple face detected. Interview will close next time."
+      );
+    } 
+    else {
+      setWarningMessage("");
+    }
+  }, [Emotion]);
+
+  if (loading) return <Loading />;
+  if (!topic) return <h2 className="error-text">No topic found</h2>;
 
   return (
-    <div className="interview-page">
-      <h1>{topic?.Headline}</h1>
-      <div className="container interbox col-md-11 mx-auto">
-        {/* Left side: Lottie assistant animation */}
-        <div className="agint col-md-5">
-          <Lottie animationData={assistantAnimation} loop={true} />
+    <div className="interview-page-container">
+      <div className="interview-header">
+         <h1 className="interview-title">{topic?.Headline}</h1>
+      </div>
+
+      {warningMessage && (
+        <div className="interview-warning-box">
+          {warningMessage}
+        </div>
+      )}
+
+      <div className="interview-split-layout">
+        {/* Left Section: Camera (Expanded to 60%) */}
+        <div className="interview-camera-section expanded">
+          <div className="camera-glass-box large-view">
+            <EmotionDetection sendEmotion={setEmotion} />
+          </div>
         </div>
 
-        {/* Right side: Emotion detection + Q&A */}
-        <div className="voice col-md-3">
-          <EmotionDetection sendEmotion={setEmotion}/>
-          <InterviewQA topic={topic?.title}   interviewStop={Emotion.data?.stop_interview==true} />
+        {/* Right Section: QA/Questions (40%) */}
+        <div className="interview-qa-section condensed">
+          <div className="qa-glass-box">
+            <InterviewQA
+              topic={topic?.title}
+              interviewStop={Emotion?.data?.stop_interview === true}
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -69,9 +94,6 @@ const IntervewPage = () => {
 };
 
 export default IntervewPage;
-
-
-
 
 
 

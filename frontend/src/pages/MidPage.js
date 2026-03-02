@@ -1,4 +1,3 @@
-// src/pages/MidPage.js
 import React, { useEffect, useState } from 'react'
 import Lottie from 'lottie-react'
 import Coding from '../animations/Coding.json'
@@ -23,9 +22,7 @@ const MidPage = () => {
   useEffect(() => {
     const fetchTopic = async () => {
       try {
-        const res = await fetch(
-          `${process.env.REACT_APP_BACKEND}/topic/topicone/${id}`
-        )
+        const res = await fetch(`${process.env.REACT_APP_BACKEND}/topic/topicone/${id}`)
         const data = await res.json()
         setTopic(data)
       } catch (err) {
@@ -40,26 +37,21 @@ const MidPage = () => {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        // const res = await fetch(`${process.env.REACT_APP_BACKEND}/record/textRecords/${auth.user._id}`);
         const res = await fetch(
           `${process.env.REACT_APP_BACKEND}/record/textRecords/${auth.user._id}`,
           {
             method: 'GET',
             credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json'
-            }
+            headers: { 'Content-Type': 'application/json' }
           }
         )
         const data = await res.json()
-        console.log(data)
-
         setHistory(data)
       } catch (err) {
         console.error(err)
       }
     }
-    fetchHistory()
+    if (auth.user?._id) fetchHistory()
   }, [auth.user])
 
   const handleClick = () => navigate(`/inter/${id}`)
@@ -68,57 +60,77 @@ const MidPage = () => {
 
   return (
     <div className='midpage-container'>
-      <h1 className='midpage-heading'>{topic.Headline}</h1>
+      <div className="midpage-header-glow">
+        <h1 className='midpage-heading'>{topic.Headline}</h1>
+      </div>
 
-      <div className='midpage-topSection'>
+      <div className='midpage-topSection glass-card'>
         <div className='midpage-leftBox'>
-          <h2 className='midpage-subHeading'>🚀 Prepare Confidently</h2>
+          <h2 className='midpage-subHeading'><span className="icon-glow">🚀</span> Prepare Confidently</h2>
           <p className='midpage-text'>{topic.descriptionlong}</p>
+          <div className='midpage-box'>
+            <button className='midpage-button' onClick={handleClick}>
+              ✨ Click Me to Begin!
+            </button>
+          </div>
         </div>
         <div className='midpage-rightBox'>
-          <Lottie animationData={Coding} loop={true} />
+          <div className="lottie-glow-wrapper">
+            <Lottie animationData={Coding} loop={true} />
+          </div>
         </div>
       </div>
 
-      <div className='midpage-box'>
-        <button className='midpage-button' onClick={handleClick}>
-          ✨ Click Me to Begin!
-        </button>
-      </div>
+      <div className='midpage-historyContainer'>
+        <div className="history-header-flex">
+          <h2 className='midpage-historyTitle'>
+            <span className="topic-emoji-glow">{topic.emoji}</span> Recent Activity
+          </h2>
+          {history.length > 3 && <span className="view-limit-tag">Showing latest 3 sessions</span>}
+        </div>
 
-      <div className='midpage-historyBox'>
-        <h2 className='midpage-historyTitle'>
-          {topic.emoji} Your Activity History
-        </h2>
+        <div className="history-grid-modern">
+          {history && history.length > 0 ? (
+            history
+              .slice(0, 3)
+              .map((record, idx) => (
+                <div key={idx} className='history-card-modern'>
+                  <div className="card-top-accent"></div>
+                  
+                  <div className="card-body">
+                    <div className="score-section">
+                       <div className="score-circle-mini">
+                          {/* LOGIC FIX: Rounding the score prevents the text overflow */}
+                          <span className="score-val">{record.score ? Math.round(record.score) : '0'}</span>
+                          <span className="score-pct">%</span>
+                       </div>
+                    </div>
 
-        {history && history.length > 0 ? (
-          history
-            .slice(0, 3) // 👈 first 2 only
-            .map((record, idx) => (
-              <div key={idx} className='midpage-historyItem'>
-                <p>
-                  <strong>Test:</strong> {record.headline || 'Unknown Topic'}
-                </p>
-                <p>
-                  <strong>Score:</strong> {record.score ?? 'N/A'}
-                </p>
-                <p>
-                  <strong>Date:</strong>{' '}
-                  {record.date ? new Date(record.date).toLocaleString() : 'N/A'}
-                </p>
-                <button
-                  className='midpage-viewAllButton'
-                  onClick={() => navigate(`/History/${record.id}`)} // 👈 Prisma uses id
-                >
-                  View All Scores
-                </button>
-              </div>
-            ))
-        ) : (
-          <p className='midpage-textCenter'>
-            History will be shown here as you progress.
-          </p>
-        )}
+                    <div className="info-section">
+                      <h4 className="history-topic-name">{record.headline || 'Interview Session'}</h4>
+                      <p className="history-timestamp">
+                        {record.date ? new Date(record.date).toLocaleDateString() : 'N/A'} • 
+                        {record.date ? new Date(record.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="card-footer">
+                    <button
+                      className='history-report-btn'
+                      onClick={() => navigate(`/History/${record._id}`)}
+                    >
+                      Analytics Report <i className="report-arrow">→</i>
+                    </button>
+                  </div>
+                </div>
+              ))
+          ) : (
+            <div className='empty-history-placeholder'>
+              <p>No activity yet. Complete your first interview to see analytics!</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

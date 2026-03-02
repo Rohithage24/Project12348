@@ -35,6 +35,7 @@
 
 // export default App
 
+// ... [Keep all your top comments and imports exactly the same] ...
 import "./App.css";
 import React from 'react';
 import { BrowserRouter as Router,Route, Routes,  useLocation} from 'react-router-dom'
@@ -56,25 +57,24 @@ import InterviewQA from "./components/InterviewQA";
 import Score from "./pages/Score";
 import History from "./pages/History";
 
-
-
-
+// IMPORT THE NEW COMPONENT
+import CosmicBackground from './components/CosmicBackground';
 
 const App = () => {
   return (
-    
+    <div style={{ position: 'relative', minHeight: '100vh' }}>
       
+      {/* THIS IS THE BACKGROUND ON EVERY PAGE */}
+      <CosmicBackground />
 
-      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        {/* ✅ Scroll to top on route change */}
-      <ScrollToTop />
+      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', position: 'relative', zIndex: 1 }}>
+        <ScrollToTop />
         <Navbar />
         <div style={{ flex: '1' }}>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
-            
             <Route path="/java" element={<IntervewPage />} />
             <Route path="/Voic" element={<VoiceAssistant />} />
             <Route path="/signup" element={<SignupForm />} />
@@ -87,22 +87,11 @@ const App = () => {
             <Route path="/interview"  element={<InterviewQA />} />
             <Route path="/score"  element={<Score />} />
             <Route path="/History/:id"  element={<History />} />
-
-
-
-
-
-
-
-
-
-
-            
           </Routes>
         </div>
         <Footer />
       </div>
- 
+    </div>
   );
 };
 
