@@ -1515,6 +1515,8 @@ body {
   margin-left: 10px;
 }
 
+
+
 /* History Section */
 .history-grid {
   display: grid;
@@ -1840,6 +1842,7 @@ body {
 .page-wrapper::before {
   top: -20%;
   right: -10%;
+  
   background: radial-gradient(circle, var(--accent-purple) 0%,rgba(240,0,255,0.3) 40%, transparent 85%);
   animation: fastCosmic 2s infinite alternate ease-in-out;
 }

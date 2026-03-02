@@ -3,7 +3,20 @@
 /venv
 /.pnp
 .pnp.js
-app/api/__pycache__
-app/api/__pycache__/predict.cpython-311.pyc
 __pycache__/
 *.pyc
+
+# Virtual environment
+venv/
+env/
+.venv/
+ENV/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# VS Code settings (optional)
+.vscode/
