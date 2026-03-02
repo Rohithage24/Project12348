@@ -3,7 +3,7 @@
 /venv
 /.pnp
 .pnp.js
-/__pycache__
-
+app/api/__pycache__
+app/api/__pycache__/predict.cpython-311.pyc
 __pycache__/
 *.pyc
