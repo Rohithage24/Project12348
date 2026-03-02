@@ -1,4 +1,3 @@
-// src/components/Footer.js
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaGithub, FaLinkedin, FaEnvelope, FaArrowUp } from 'react-icons/fa';
@@ -9,13 +8,14 @@ const Footer = () => {
   };
 
   return (
-    <footer className="footer">
-      <div className="wave-divider"></div>
+    <footer className="main-footer">
+      {/* Top Border Glow Line */}
+      <div className="footer-glow-line"></div>
 
       <div className="footer-container">
         {/* Branding */}
         <div className="footer-section">
-          <h2 className="footer-logo">MockPrep 🚀</h2>
+          <h2 className="footer-logo">MockPrep <span>🚀</span></h2>
           <p className="footer-text">
             Ace your interviews with confidence! Curated questions, clean UI, and real preparation.
           </p>
@@ -35,35 +35,26 @@ const Footer = () => {
         <div className="footer-section">
           <h3 className="footer-heading">Connect</h3>
           <div className="footer-icons">
-            <a href="https://github.com" target="_blank" rel="noreferrer"><FaGithub size={24} /></a>
-            <a href="https://www.linkedin.com/in/charwak-bhonde-41a436259" target="_blank" rel="noreferrer"><FaLinkedin size={24} /></a>
-            <a href="mailto:charwakbhonde123@gmail.com"><FaEnvelope size={24} /></a>
+            <a href="https://github.com" target="_blank" rel="noreferrer"><FaGithub size={20} /></a>
+            <a href="https://www.linkedin.com" target="_blank" rel="noreferrer"><FaLinkedin size={20} /></a>
+            <a href="mailto:charwakbhonde123@gmail.com"><FaEnvelope size={20} /></a>
           </div>
         </div>
 
         {/* Developers */}
         <div className="footer-section">
           <h3 className="footer-heading">Developers</h3>
-          <p className="footer-text">
-            Aniruddha Saraf<br />
-            Rohit Hage<br />
-            Vedant Khairkar<br />
-            Shatayu Balapure<br />
-            Charwak Bhonde
+          <p className="dev-list">
+            Aniruddha Saraf • Rohit Hage • Vedant Khairkar • Shatayu Balapure • Charwak Bhonde
           </p>
         </div>
       </div>
 
-      {/* Back to top */}
-      <div className="top-btn-container">
+      <div className="footer-bottom">
+        <p>© {new Date().getFullYear()} MockPrep. Build yourself. Created by Panchtatva</p>
         <button onClick={scrollToTop} className="top-btn">
-          <FaArrowUp /> Top
+          <FaArrowUp /> <span>Top</span>
         </button>
-      </div>
-
-      {/* Bottom line */}
-      <div className="bottom-line">
-        <p>© {new Date().getFullYear()} MockPrep. Crafted with ❤️ by our dev team.</p>
       </div>
     </footer>
   );

@@ -53,7 +53,7 @@ export default function CameraCapture({sendEmotion}) {
 
 
       const result = await resEmo.json();
-      // console.log(result);
+      console.log("Result",result);
       
       sendEmotion(result);
     } catch (err) {

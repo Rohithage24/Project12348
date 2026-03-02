@@ -4,12 +4,10 @@ import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 
 const Dashboard = () => {
-  // Sample data
   const totalQuestions = 10;
   const correct = 6;
   const incorrect = 2;
   const unattempted = totalQuestions - (correct + incorrect);
-
   const percentage = (correct / totalQuestions) * 100;
 
   return (
@@ -21,10 +19,10 @@ const Dashboard = () => {
           value={percentage}
           text={`${percentage.toFixed(0)}%`}
           styles={buildStyles({
-            textColor: '#2d3436',
-            pathColor: '#00b894',
-            trailColor: '#dfe6e9',
-            strokeLinecap: 'round',
+            textColor: '#ffffff', // White text for dark mode
+            pathColor: '#00f2ff', // Matching your --accent-blue
+            trailColor: 'rgba(255, 255, 255, 0.1)',
+            strokeLinecap: 'butt', // Sharp modern look
           })}
         />
       </div>

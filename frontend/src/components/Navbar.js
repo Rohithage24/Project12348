@@ -1,137 +1,95 @@
-import React, { useState, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import LoginForm from './LoginForm'
-import SignupForm from './SignupForm'
-import { useAuth } from '../context/AuthProvider'
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import LoginForm from './LoginForm';
+import SignupForm from './SignupForm';
+import { useAuth } from '../context/AuthProvider';
 
 const Navbar = () => {
-  const [auth, setAuth] = useAuth()
-  const [showLogin, setShowLogin] = useState(false)
-  const [showSignup, setShowSignup] = useState(false)
-  const [showDropdown, setShowDropdown] = useState(false)
+  const [auth, setAuth] = useAuth();
+  const [showLogin, setShowLogin] = useState(false);
+  const [showSignup, setShowSignup] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
     if (location.state?.openLogin) {
-      setShowLogin(true)
+      setShowLogin(true);
     }
-  }, [location])
+  }, [location]);
 
   const closeModals = () => {
-    setShowLogin(false)
-    setShowSignup(false)
-  }
+    setShowLogin(false);
+    setShowSignup(false);
+  };
 
-const handleLogout = async () => {
-   console.log("Logout");
-   
-  try {
-
-    await fetch(`${process.env.REACT_APP_BACKEND}/logout`, {
-      method: "GET",
-      credentials: "include",
-    });
-
-     // Clear frontend auth no matter what
-    setAuth({ user: null, token: "" });
-    localStorage.removeItem("auth");
-    setShowDropdown(false);
-  } catch (err) {
-    console.error("Logout API failed", err);
-  }
-};
-
+  const handleLogout = async () => {
+    try {
+      await fetch(`${process.env.REACT_APP_BACKEND}/logout`, {
+        method: "GET",
+        credentials: "include",
+      });
+      setAuth({ user: null, token: "" });
+      localStorage.removeItem("auth");
+      setShowDropdown(false);
+    } catch (err) {
+      console.error("Logout API failed", err);
+    }
+  };
 
   return (
     <nav className='navbar'>
-      <div className='navbar-logo'>Interview Prep</div>
+      <div className='navbar-logo'>Mock<span>Prep</span> 🚀</div>
+      
       <div className='navbar-links'>
-        <Link to='/' className='navbar-link'>
-          Home
-        </Link>
-        <Link to='/about' className='navbar-link'>
-          About
-        </Link>
-        <Link to='/contact' className='navbar-link'>
-          Contact
-        </Link>
+        <Link to='/' className='navbar-link'>Home</Link>
+        <Link to='/about' className='navbar-link'>About</Link>
+        <Link to='/contact' className='navbar-link'>Contact</Link>
 
         {auth?.user ? (
-          <div style={{ position: 'relative' }}>
+          <div className="user-menu-container">
             <button
-              className='navbar-button'
+              className='navbar-user-btn'
               onClick={() => setShowDropdown(prev => !prev)}
             >
-              {auth.user.Name}
+              {auth.user.Name} ▾
             </button>
 
             {showDropdown && (
               <div className='navbar-dropdown-content'>
-                <Link
-                  to='/profile'
-                  onClick={() => setShowDropdown(false)}
-                  className='navbar-dropdown-item'
-                >
+                <Link to='/profile' onClick={() => setShowDropdown(false)} className='navbar-dropdown-item'>
                   Profile
                 </Link>
-                <Link
-                  to='/settings'
-                  onClick={() => setShowDropdown(false)}
-                  className='navbar-dropdown-item'
-                >
+                <Link to='/settings' onClick={() => setShowDropdown(false)} className='navbar-dropdown-item'>
                   Settings
                 </Link>
-                <Link
-                  to='/'
-                  onClick={handleLogout}
-                  className='navbar-dropdown-item'
-                >
+                <div onClick={handleLogout} className='navbar-dropdown-item logout'>
                   Logout
-                </Link>
+                </div>
               </div>
             )}
           </div>
         ) : (
-          <>
-            <button
-              onClick={() => setShowLogin(true)}
-              className='navbar-button'
-            >
+          <div className="auth-buttons">
+            <button onClick={() => setShowLogin(true)} className='navbar-button-outline'>
               Login
             </button>
-            <button
-              onClick={() => setShowSignup(true)}
-              className='navbar-button-dark'
-            >
+            <button onClick={() => setShowSignup(true)} className='navbar-button-filled'>
               Signup
             </button>
-          </>
+          </div>
         )}
       </div>
 
-      {showLogin && (
+      {/* Modals */}
+      {(showLogin || showSignup) && (
         <div className='navbar-overlay' onClick={closeModals}>
-          <div
-            className='navbar-modal-wrapper'
-            onClick={e => e.stopPropagation()}
-          >
-            <LoginForm onClose={closeModals} />
-          </div>
-        </div>
-      )}
-
-      {showSignup && (
-        <div className='navbar-overlay' onClick={closeModals}>
-          <div
-            className='navbar-modal-wrapper'
-            onClick={e => e.stopPropagation()}
-          >
-            <SignupForm onClose={closeModals} />
+          <div className='navbar-modal-wrapper' onClick={e => e.stopPropagation()}>
+            {showLogin ? <LoginForm onClose={closeModals} /> : <SignupForm onClose={closeModals} />}
           </div>
         </div>
       )}
     </nav>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar;

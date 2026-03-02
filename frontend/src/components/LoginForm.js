@@ -6,7 +6,6 @@ import SignupForm from "./SignupForm";
 const LoginForm = ({ onClose }) => {
   const navigate = useNavigate();
   const [auth, setAuth] = useAuth();
-
   const [formData, setFormData] = useState({ gmail: "", password: "" });
   const [showSignup, setShowSignup] = useState(false);
   const [message, setMessage] = useState("");
@@ -25,31 +24,14 @@ const LoginForm = ({ onClose }) => {
         body: JSON.stringify(formData),
       });
 
-      const data = await res.json(); // ✅ ONLY ONCE
+      const data = await res.json();
 
       if (res.ok && data.user && data.token) {
-        // ✅ Update auth context
-        setAuth({
-          ...auth,
-          user: data.user,
-          token: data.token,
-        });
-
-        // ✅ Save clean auth object
-        localStorage.setItem(
-          "auth",
-          JSON.stringify({
-            user: data.user,
-            token: data.token,
-          })
-        );
-
+        setAuth({ ...auth, user: data.user, token: data.token });
+        localStorage.setItem("auth", JSON.stringify({ user: data.user, token: data.token }));
         setMessage(data.message || "Login successful");
-
         onClose && onClose();
         navigate("/");
-      } else if (res.status === 401) {
-        setMessage(data.message || "Wrong email or password");
       } else {
         setMessage(data.message || "Login failed");
       }
@@ -63,50 +45,58 @@ const LoginForm = ({ onClose }) => {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         {!showSignup ? (
-          <>
-            <button className="modal-close-btn" onClick={onClose}>
-              ✖
-            </button>
-            <h2 className="modal-heading">Login</h2>
+          <div className="modal-inner">
+            <button className="modal-close-btn" onClick={onClose}>✖</button>
+            
+            <div className="modal-header">
+              <div className="modal-icon">🔐</div>
+              <h2 className="modal-heading">Welcome Back</h2>
+              <p className="modal-subtext">Login to continue your prep</p>
+            </div>
 
             <form onSubmit={handleSubmit} className="modal-form">
-              <input
-                type="email"
-                name="gmail"
-                className="modal-input"
-                placeholder="Email Address"
-                value={formData.gmail}
-                onChange={handleChange}
-                required
-              />
+              <div className="input-group">
+                <input
+                  type="email"
+                  name="gmail"
+                  className="modal-input"
+                  placeholder="Email Address"
+                  value={formData.gmail}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
 
-              <input
-                type="password"
-                name="password"
-                className="modal-input"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
+              <div className="input-group">
+                <input
+                  type="password"
+                  name="password"
+                  className="modal-input"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
 
               <button type="submit" className="modal-button">
-                Login
+                Login ⚡
               </button>
 
               <p className="modal-link-small">
                 Don’t have an account?{" "}
-                <span
-                  onClick={() => setShowSignup(true)}
-                  className="modal-link"
-                >
+                <span onClick={() => setShowSignup(true)} className="modal-link">
                   Sign up
                 </span>
               </p>
 
-              {message && <div className="alert-info">{message}</div>}
+              {message && (
+                <div className={`alert-info ${message.includes("success") ? "success" : "error"}`}>
+                  {message}
+                </div>
+              )}
             </form>
-          </>
+          </div>
         ) : (
           <SignupForm onClose={onClose} onBack={() => setShowSignup(false)} />
         )}

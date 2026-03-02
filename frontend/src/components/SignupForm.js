@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthProvider";
 
-
-const SignupForm = ({ onClose , onBack }) => {
+const SignupForm = ({ onClose, onBack }) => {
+  // --- YOUR ORIGINAL STATE ---
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -20,6 +20,7 @@ const SignupForm = ({ onClose , onBack }) => {
 
   const navigate = useNavigate();
 
+  // --- YOUR ORIGINAL HANDLERS ---
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
@@ -32,14 +33,10 @@ const SignupForm = ({ onClose , onBack }) => {
     return regex.test(password);
   };
 
-  // =======================
-  // STEP 1: SEND OTP (DEV MODE)
-  // =======================
   const handleSendOTP = async () => {
     if (!formData.mobile) {
       return setMessage("Please enter your mobile number.");
     }
-
     try {
       setMessage("Sending OTP...");
       const res = await fetch(
@@ -51,18 +48,11 @@ const SignupForm = ({ onClose , onBack }) => {
           body: JSON.stringify({ mobile: formData.mobile }),
         }
       );
-
       const data = await res.json();
-
       if (res.ok) {
         setOtpSent(true);
-
-        // ⚡ Log OTP in console for development
         console.log("Mock OTP (for testing):", data.otp || "Use backend OTP");
-
-        setMessage(
-          "OTP sent successfully! Check console for OTP (dev mode)."
-        );
+        setMessage("OTP sent successfully! Check console for OTP (dev mode).");
       } else {
         setMessage(data.message || "Failed to send OTP");
       }
@@ -72,15 +62,11 @@ const SignupForm = ({ onClose , onBack }) => {
     }
   };
 
-  // =======================
-  // STEP 2: VERIFY OTP
-  // =======================
   const handleVerifyOTP = async () => {
     if (!formData.otp) {
       setMessage("Please enter OTP.");
       return false;
     }
-
     try {
       const res = await fetch(
         `${process.env.REACT_APP_BACKEND}/user/verify-otp`,
@@ -94,9 +80,7 @@ const SignupForm = ({ onClose , onBack }) => {
           }),
         }
       );
-
       const data = await res.json();
-
       if (res.ok) {
         setOtpVerified(true);
         setMessage("OTP verified successfully!");
@@ -112,31 +96,21 @@ const SignupForm = ({ onClose , onBack }) => {
     }
   };
 
-  // =======================
-  // STEP 3: REGISTER USER
-  // =======================
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validatePassword(formData.password)) {
-      return setMessage(
-        "Password must be at least 8 characters and include a number and special character."
-      );
+      return setMessage("Password must be at least 8 characters and include a number and special character.");
     }
-
     if (!formData.gender) {
       return setMessage("Please select your gender.");
     }
-
     if (!otpSent) {
       return setMessage("Please send OTP first.");
     }
-
     if (!otpVerified) {
       const verified = await handleVerifyOTP();
       if (!verified) return;
     }
-
     try {
       const res = await fetch(
         `${process.env.REACT_APP_BACKEND}/user/register`,
@@ -153,47 +127,22 @@ const SignupForm = ({ onClose , onBack }) => {
           }),
         }
       );
-
       const data = await res.json();
-      console.log(data);
-      
       if (res.ok && data.user && data.token) {
-        // ✅ Update auth context
-        setAuth({
-          ...auth,
-          user: data.user,
-          token: data.token,
-        });
-
-        // ✅ Save clean auth object
-        localStorage.setItem(
-          "auth",
-          JSON.stringify({
-            user: data.user,
-            token: data.token,
-          })
-        );
-
+        setAuth({ ...auth, user: data.user, token: data.token });
+        localStorage.setItem("auth", JSON.stringify({ user: data.user, token: data.token }));
         setMessage(data.message || "Login successful");
-
         onClose && onClose();
         navigate("/");
-      } else if (res.status === 401) {
-        setMessage(data.message || "Wrong email or password");
       } else {
-        setMessage(data.message || "Login failed");
+        setMessage(data.message || "Registration failed");
       }
-      
-     
     } catch (err) {
       console.error(err);
       setMessage("Error during signup");
     }
   };
 
-  // =======================
-  // RESEND OTP
-  // =======================
   const handleResendOTP = async () => {
     try {
       setMessage("Resending OTP...");
@@ -205,125 +154,75 @@ const SignupForm = ({ onClose , onBack }) => {
           body: JSON.stringify({ mobile: formData.mobile }),
         }
       );
-
       const data = await res.json();
       setMessage(res.ok ? "OTP resent successfully!" : data.message);
-      if (res.ok) console.log("Mock OTP (resend):", data.otp);
     } catch (err) {
       console.error(err);
       setMessage("Error resending OTP");
     }
   };
 
-  return (
-    <div className="signup-container">
-      <button className="signup-close-btn" onClick={onClose}>
-        ✖
-      </button>
-      <h2 className="signup-heading">Signup Form</h2>
+  // --- UI START ---
+  // To prevent the "Corner" issue, we only wrap in modal-overlay IF we are on a direct page
+  const MainContent = (
+    <div className="modal-inner signup-scroll">
+      <button className="modal-close-btn" onClick={onClose}>✖</button>
+      <div className="modal-header">
+        <div className="modal-icon">🚀</div>
+        <h2 className="modal-heading">Signup Form</h2>
+        <p className="modal-subtext">Join our community today</p>
+      </div>
 
-      <form onSubmit={handleSubmit} className="signup-form">
-        <input
-          name="name"
-          placeholder="Full Name"
-          value={formData.name}
-          onChange={handleChange}
-          className="signup-input"
-          required
-        />
-        <input
-          name="email"
-          type="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-          className="signup-input"
-          required
-        />
-        <input
-          name="password"
-          type="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-          className="signup-input"
-          required
-        />
-        <input
-          name="address"
-          placeholder="Address"
-          value={formData.address}
-          onChange={handleChange}
-          className="signup-input"
-          required
-        />
-        <input
-          name="mobile"
-          placeholder="Mobile Number"
-          value={formData.mobile}
-          onChange={handleChange}
-          className="signup-input"
-          required
-        />
+      <form onSubmit={handleSubmit} className="modal-form">
+        <input name="name" placeholder="Full Name" value={formData.name} onChange={handleChange} className="modal-input" required />
+        <input name="email" type="email" placeholder="Email" value={formData.email} onChange={handleChange} className="modal-input" required />
+        <input name="password" type="password" placeholder="Password" value={formData.password} onChange={handleChange} className="modal-input" required />
+        <input name="address" placeholder="Address" value={formData.address} onChange={handleChange} className="modal-input" required />
+        <input name="mobile" placeholder="Mobile Number" value={formData.mobile} onChange={handleChange} className="modal-input" required />
 
         {!otpSent ? (
-          <button
-            type="button"
-            onClick={handleSendOTP}
-            className="signup-button"
-          >
-            Send OTP
-          </button>
+          <button type="button" onClick={handleSendOTP} className="otp-btn">Send OTP</button>
         ) : (
-          <>
-            <input
-              name="otp"
-              placeholder="Enter OTP"
-              value={formData.otp}
-              onChange={handleChange}
-              className="signup-input"
-              required
-            />
-            <span
-              onClick={handleResendOTP}
-              className="signup-resend-otp"
-            >
-              Resend OTP
-            </span>
-          </>
+          <div className="otp-container">
+            <input name="otp" placeholder="Enter OTP" value={formData.otp} onChange={handleChange} className="modal-input" required />
+            <span onClick={handleResendOTP} className="modal-link resend-text">Resend OTP</span>
+          </div>
         )}
 
-        <select
-          name="gender"
-          value={formData.gender}
-          onChange={handleChange}
-          className="signup-input"
-          required
-        >
+        <select name="gender" value={formData.gender} onChange={handleChange} className="modal-input modal-select" required>
           <option value="">Select Gender</option>
           <option value="male">Male</option>
           <option value="female">Female</option>
         </select>
 
-        <button type="submit" className="signup-button">
-          Sign Up
-        </button>
-
-        <p style={{ fontSize: "14px", marginTop: "10px" }}>
-          Already have an account?{" "}
-          <span onClick={onBack} className="signup-link">
-            Go back to Login
-          </span>
+        <button type="submit" className="modal-button">Sign Up</button>
+        <p className="modal-link-small">
+          Already have an account? <span onClick={onBack} className="modal-link">Go back to Login</span>
         </p>
 
-        {message && <div className="signup-message">{message}</div>}
+        {message && (
+          <div className={`alert-info ${message.toLowerCase().includes("success") || message.toLowerCase().includes("sent") ? "success" : "error"}`}>
+            {message}
+          </div>
+        )}
       </form>
+    </div>
+  );
+
+  // If "onBack" exists, we are already inside a centered modal from LoginForm.
+  // If not, we need to provide the centering wrappers ourselves.
+  return onBack ? (
+    MainContent
+  ) : (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        {MainContent}
+      </div>
     </div>
   );
 };
 
 export default SignupForm;
-
 
 
 // import React, { useState } from "react";
