@@ -1207,8 +1207,124 @@ body {
 @media (max-width: 900px) {
   .user-profile-card { flex: 1 1 100%; } /* Stack profile on mobile */
 }
+/* Update your dashboard-stat to handle the circle + text combo */
+.dashboard-stat {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-radius: 16px !important;
+  padding: 20px !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
 
+.dashboard-stat:hover {
+  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.08) !important;
+}
 
+.dashboard-stat h3 {
+  font-size: 1.8rem;
+  margin: 0;
+  color: #fff;
+}
+
+.badge-ai {
+  background: rgba(0, 242, 255, 0.1);
+  color: #00f2ff;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  border: 1px solid rgba(0, 242, 255, 0.3);
+}
+/* --- DASHBOARD FULL REPAIR --- */
+.dashboard-container {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 30px;
+  background: rgba(13, 14, 21, 0.9) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  backdrop-filter: blur(20px);
+  height: auto !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-header-row {
+  display: flex;
+  flex-wrap: wrap; 
+  gap: 20px;
+  width: 100%;
+}
+
+.user-profile-card {
+  flex: 0 0 320px; 
+  background: rgba(255, 255, 255, 0.03);
+  padding: 25px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.dashboard-stats-container {
+  flex: 1; 
+  min-width: 300px;
+}
+
+.dashboard-stats {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+  gap: 15px !important;
+  width: 100%;
+}
+
+.dashboard-stat {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-radius: 16px !important;
+  padding: 20px !important;
+  height: auto !important;
+  min-height: 110px !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.dashboard-stat:hover {
+  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.dashboard-stat p {
+  margin: 5px 0 0 0;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.progress-charts-section {
+  width: 100% !important;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 30px;
+  border-radius: 20px;
+  margin-top: 30px;
+}
+
+.progress-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .user-profile-card { flex: 1 1 100%; }
+}
 
 
 
@@ -1842,7 +1958,7 @@ body {
 .page-wrapper::before {
   top: -20%;
   right: -10%;
-  
+
   background: radial-gradient(circle, var(--accent-purple) 0%,rgba(240,0,255,0.3) 40%, transparent 85%);
   animation: fastCosmic 2s infinite alternate ease-in-out;
 }
@@ -2540,96 +2656,7 @@ body {
 }
 /*interview page dark theme*/
 /* --- INTERVIEW PAGE DARK THEME --- */
-.interview-page-container {
-  padding: 20px;
-  color: white;
-  min-height: 90vh;
-  background: transparent !important;
-}
-
-.interview-title {
-  text-align: center;
-  font-size: 2.2rem;
-  margin-bottom: 25px;
-  background: linear-gradient(90deg, #ffffff, #00d2ff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Center the single column */
-.interview-focused-layout {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  width: 100%;
-}
-
-.interview-main-column {
-  width: 100%;
-  max-width: 700px; /* Adjust this width to make the UI wider or narrower */
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-/* Glass effect for Camera */
-.camera-glass-box {
-  background: #000;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
-  aspect-ratio: 16 / 9; /* Keeps camera proportion consistent */
-}
-
-/* Glass effect for QA Section */
-.qa-glass-box {
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  padding: 30px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-}
-
-.interview-warning-box {
-  background: rgba(255, 0, 0, 0.15);
-  backdrop-filter: blur(10px);
-  color: #ff4d4d;
-  padding: 15px;
-  margin: 0 auto 20px auto;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 0, 0, 0.3);
-  text-align: center;
-  font-weight: bold;
-  max-width: 700px;
-}
-.interview-page-container {
-  padding: 20px 40px;
-  color: white;
-  min-height: 90vh;
-  background: transparent !important;
-}
-
-.interview-title {
-  text-align: center;
-  font-size: 2rem;
-  margin-bottom: 20px;
-  background: linear-gradient(90deg, #ffffff, #00d2ff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* The Flexbox Split */
-.interview-split-layout {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 30px;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
+/* --- Interview Page Layout --- */
 .interview-page-container {
   padding: 10px 30px;
   color: white;
@@ -2646,6 +2673,7 @@ body {
   -webkit-text-fill-color: transparent;
 }
 
+/* --- The Flexbox Split (Main Container) --- */
 .interview-split-layout {
   display: flex;
   justify-content: center;
@@ -2655,24 +2683,24 @@ body {
   margin: 0 auto;
 }
 
-/* Camera Side (Now 60%) */
+/* --- Camera Side (60%) --- */
 .interview-camera-section.expanded {
   flex: 0 0 60%; 
   min-width: 500px;
 }
 
-/* QA Side (Remaining 40%) */
-.interview-qa-section.condensed {
-  flex: 1;
-}
-
 .camera-glass-box.large-view {
   background: #000;
-  border: 2px solid rgba(0, 210, 255, 0.2); /* Added subtle neon border */
+  border: 2px solid rgba(0, 210, 255, 0.2);
   border-radius: 28px;
   overflow: hidden;
   box-shadow: 0 0 40px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 210, 255, 0.1);
   height: 100%;
+}
+
+/* --- QA Side (Remaining 40%) --- */
+.interview-qa-section.condensed {
+  flex: 1;
 }
 
 .qa-glass-box {
@@ -2687,7 +2715,7 @@ body {
   flex-direction: column;
 }
 
-/* Maintain Warning Box style */
+/* --- Warning Box Style --- */
 .interview-warning-box {
   background: rgba(255, 0, 0, 0.15);
   backdrop-filter: blur(10px);
@@ -2701,6 +2729,7 @@ body {
   max-width: 90%;
 }
 
+/* --- Responsive Adjustments --- */
 @media (max-width: 1100px) {
   .interview-split-layout {
     flex-direction: column;
@@ -2712,7 +2741,6 @@ body {
   }
 }
 
-/* Responsive: Stack them on mobile */
 @media (max-width: 1000px) {
   .interview-split-layout {
     flex-direction: column;
@@ -2724,6 +2752,7 @@ body {
     flex: none;
     min-width: unset;
   }
+
 }
 /*question and anser page that is interviewQA page dark theme*/
 .qa-terminal {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthProvider";
 import EmotionDetection from "../components/EmotionDetection";
@@ -42,11 +42,26 @@ const IntervewPage = () => {
     fetchTopic();
   }, [id]);
 
-  useEffect(() => {
-    if (Emotion?.data?.warning_count === 1) {
+  /**
+   * SPEED FIX & AUTO-REDIRECT LOGIC
+   */
+  const handleEmotionUpdate = useCallback((newData) => {
+    setEmotion(newData);
+
+    const count = newData?.data?.warning_count;
+    const stopInterview = newData?.data?.stop_interview;
+
+    // IMMEDIATE REDIRECT: If stop_interview is true, go home immediately
+    if (stopInterview === true) {
+      navigate("/");
+      return; 
+    }
+
+    // Fast-track Warnings
+    if (count === 1) {
       setWarningMessage("⚠️ Multiple face detected. You have 2 chances left.");
     } 
-    else if (Emotion?.data?.warning_count === 2) {
+    else if (count === 2) {
       setWarningMessage(
         "🚨 Final warning: Multiple face detected. Interview will close next time."
       );
@@ -54,7 +69,7 @@ const IntervewPage = () => {
     else {
       setWarningMessage("");
     }
-  }, [Emotion]);
+  }, [navigate]);
 
   if (loading) return <Loading />;
   if (!topic) return <h2 className="error-text">No topic found</h2>;
@@ -72,14 +87,12 @@ const IntervewPage = () => {
       )}
 
       <div className="interview-split-layout">
-        {/* Left Section: Camera (Expanded to 60%) */}
         <div className="interview-camera-section expanded">
           <div className="camera-glass-box large-view">
-            <EmotionDetection sendEmotion={setEmotion} />
+            <EmotionDetection sendEmotion={handleEmotionUpdate} />
           </div>
         </div>
 
-        {/* Right Section: QA/Questions (40%) */}
         <div className="interview-qa-section condensed">
           <div className="qa-glass-box">
             <InterviewQA
