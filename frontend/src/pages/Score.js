@@ -118,7 +118,7 @@ const Score = () => {
           <div className="summary-header">
             <h2 className="topic-title">{results.headline || "Unknown Topic"}</h2>
             <div className="main-score-circle">
-               <span className="score-number">{results.score ?? "0"}</span>
+               <span className="score-number">{results.score.toFixed(2) ?? "0"}</span>
                <span className="score-label">OVERALL</span>
             </div>
           </div>
