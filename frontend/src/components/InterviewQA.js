@@ -39,7 +39,7 @@ export default function InterviewQA({ topic, interviewStop }) {
     const fetchQuestions = async () => {
       try {
         const response = await fetch(
-          "http://localhost:4000/api/question/questiona/React",
+          `${process.env.REACT_APP_BACKEND}/question/questiona/${topic}`,
           {
             method: "GET",
             credentials: "include",
