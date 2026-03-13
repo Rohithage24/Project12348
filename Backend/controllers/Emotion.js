@@ -4,7 +4,7 @@ dotenv.config()
 
 export const getImage = async (req, res) => {
   try {
-    console.log("Image received" , process.env.EMOTION_AND_FACE_API);
+    // console.log("Image received" , process.env.EMOTION_AND_FACE_API);
 
     const imageSrc = req.body.image;
 

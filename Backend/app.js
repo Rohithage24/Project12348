@@ -10,6 +10,7 @@ import TopicControl from "./router/TopicControl.js";
 import chatRouter from "./router/chatRouter.js";
 import RecordRouter from "./router/RecordRouter.js";
 import QuestionRou from "./router/QuestionsRouter.js";
+import  StudAvgRec from "./router/StudAvgRec.route.js"
 import { getImage , calEmo} from "./controllers/Emotion.js";
 
 
@@ -40,6 +41,8 @@ app.use("/api/topic", TopicControl);
 app.use("/api/agentChat", authMiddleware, chatRouter);
 app.use("/api/record", authMiddleware, RecordRouter);
 app.use("/api/question", authMiddleware, QuestionRou);
+app.use("/api/RecResult", StudAvgRec);
+
 
 /* LOGOUT */
 app.post("/api/logout", authMiddleware, logout);

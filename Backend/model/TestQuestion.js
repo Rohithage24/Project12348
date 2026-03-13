@@ -29,6 +29,7 @@ const testRecordSchema = new mongoose.Schema(
     score: { type: Number, required: true, default: 0 },
     accuracy: { type: Number, required: true, default: 0 },
     emotion :{type : Number , required :true},
+    VoiceConfindance :{type : Number , required :true},
     date: { type: Date, default: Date.now }
   },
   { timestamps: true }

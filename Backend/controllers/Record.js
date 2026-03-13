@@ -1,4 +1,5 @@
 import TestRecord from '../model/TestQuestion.js'
+import AvgrecordModel from '../model/StudentAvgrecord.js'
 import dotenv from 'dotenv'
 
 dotenv.config()
@@ -117,18 +118,25 @@ const record = async (req, res) => {
 
     let totalScore = 0
     let totalAccuracy = 0
+    let totalConfidenceScore = 0
 
     sessionQuestions.forEach(q => {
       totalScore += Number(q.QuesScore) || 0
       totalAccuracy += Number(q.accuracy) || 0
+      totalConfidenceScore += Number(q.ConfidenceScore) || 0
     })
 
     const len = sessionQuestions.length
-    const avgScore = len ? totalScore / len : 0
-    const avgAccuracy = len ? totalAccuracy / len : 0
 
-    // ✅ Extract emotion value (66.24)
-    const emotionScore = dataEmo?.average || 0
+    const avgScore = len ? Number((totalScore / len).toFixed(2)) : 0
+    const avgAccuracy = len ? Number((totalAccuracy / len).toFixed(2)) : 0
+    const avgAConfidenceScore = len
+      ? Number((totalConfidenceScore / len).toFixed(2))
+      : 0
+
+    const emotionScore = dataEmo?.average
+      ? Number(dataEmo.average.toFixed(2))
+      : 0
 
     const testRec = await TestRecord.create({
       userId,
@@ -137,10 +145,31 @@ const record = async (req, res) => {
       accuracy: avgAccuracy,
       score: avgScore,
       emotion: emotionScore,
+      VoiceConfindance: avgAConfidenceScore,
       date: new Date()
     })
 
     delete testSessions[userId]
+
+    const userEx = await AvgrecordModel.findOne({ userId: userId })
+    if (userEx) {
+      userEx.score = Number((Number(userEx.score) + avgScore) / 2)
+      userEx.accuracy = Number((Number(userEx.accuracy) + avgAccuracy) / 2)
+      userEx.emotion = Number((Number(userEx.emotion) + emotionScore) / 2)
+      userEx.VoiceConfindance = Number(
+        (Number(userEx.VoiceConfindance) + avgAConfidenceScore) / 2
+      )
+
+      await userEx.save()
+    } else {
+      await AvgrecordModel.create({
+        userId,
+        score: avgScore,
+        accuracy: avgAccuracy,
+        emotion: emotionScore,
+        VoiceConfindance: avgAConfidenceScore
+      })
+    }
 
     return res.status(201).json({
       message: 'Test completed successfully',
@@ -160,8 +189,8 @@ const getUserTest = async (req, res) => {
 
   try {
     const tests = await TestRecord.find({ userId }).sort({ date: -1 })
-    console.log(tests);
-    
+    console.log(tests)
+
     return res.status(200).json(tests)
   } catch (err) {
     console.error('Get User Tests Error:', err)

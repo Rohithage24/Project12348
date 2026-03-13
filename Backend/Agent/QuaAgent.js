@@ -37,14 +37,14 @@ const getRandomQuestions = async (req, res) => {
       return res.status(400).json({ message: "Invalid topic selected" });
     }
 
-    const randomCount = Math.floor(Math.random() * (8 - 5 + 1)) + 5;
+    const randomCount =5; //Math.floor(Math.random() * (8 - 5 + 1)) + 5;
 
     const questions = await Model.aggregate([
       { $sample: { size: randomCount } }
     ]);
      
 
-    console.log(questions);
+    // console.log(questions);
     
     if (!questions.length) {
       return res.status(404).json({ message: "No questions found in database" });

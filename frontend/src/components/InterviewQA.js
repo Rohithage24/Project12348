@@ -53,7 +53,7 @@ export default function InterviewQA({ topic, interviewStop }) {
       }
     };
     fetchQuestions();
-  }, [topic]);
+  }, []);
 
   useEffect(() => {
     if (
