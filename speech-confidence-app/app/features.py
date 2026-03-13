@@ -7,53 +7,60 @@ def extract_features(audio_path):
         y, sr = librosa.load(audio_path, duration=60)
         total_duration = librosa.get_duration(y=y, sr=sr)
 
-        # --- 1. STRICT SILENCE DETECTION ---
-        # We increased top_db to 30 (was 20). This filters out breathing/fan noise.
-        intervals = librosa.effects.split(y, top_db=30)
-        non_silent_time = sum([(end - start) for start, end in intervals]) / sr
-        speaking_ratio = non_silent_time / total_duration if total_duration > 0 else 0
+        if total_duration == 0:
+            return None
 
-        # --- 2. SYLLABLE COUNTER (For "Anti-Cheat") ---
-        # This counts "energy peaks" to guess how many syllables you said
+        # --- 1. STRICT SILENCE DETECTION (The 2-Second Rule) ---
+        intervals = librosa.effects.split(y, top_db=30)
+        
+        pauses_sec = []
+        for i in range(1, len(intervals)):
+            gap_in_samples = intervals[i][0] - intervals[i-1][1]
+            pauses_sec.append(gap_in_samples / sr)
+            
+        max_pause = max(pauses_sec) if pauses_sec else 0.0
+        
+        speech_samples = sum([end - start for start, end in intervals])
+        speech_duration = speech_samples / sr
+        silence_ratio = (total_duration - speech_duration) / total_duration
+        
+        # Calculate Penalty
+        fluency_penalty = 0
+        if max_pause >= 1.5:
+            fluency_penalty += 15  # 15 point penalty for a 2-second pause
+        if silence_ratio > 0.15:
+            fluency_penalty += 10  # 10 point penalty for too much dead air
+
+        # --- 2. SYLLABLE COUNTER (Pace) ---
         onset_env = librosa.onset.onset_strength(y=y, sr=sr)
         onsets = librosa.onset.onset_detect(onset_envelope=onset_env, sr=sr)
-        syllable_count = len(onsets) 
-        
-        # Calculate Pace (Syllables per second)
-        pace = syllable_count / total_duration if total_duration > 0 else 0
+        pace = len(onsets) / total_duration
 
-        # --- 3. PITCH ANALYSIS (Noise Filtered) ---
+        # --- 3. PITCH ANALYSIS (Tone) ---
         pitches, magnitudes = librosa.piptrack(y=y, sr=sr)
-        
-        # Filter: Only accept frequencies 50Hz-400Hz (Human Range)
         valid_pitches = []
         for t in range(pitches.shape[1]):
             index = magnitudes[:, t].argmax()
             pitch = pitches[index, t]
-            if pitch > 50 and pitch < 400:
+            if 50 < pitch < 400: # Human Range
                 valid_pitches.append(pitch)
         
-        valid_pitches = np.array(valid_pitches)
+        pitch_std = np.std(valid_pitches) if len(valid_pitches) > 0 else 0
 
-        if len(valid_pitches) > 0:
-            pitch_std = np.std(valid_pitches)
-        else:
-            pitch_std = 0
+        # --- 4. CLARITY (RMS) ---
+        rms = float(np.mean(librosa.feature.rms(y=y)))
+        clarity_score = float(min(100, max(30, rms * 1000)))
 
-        # --- 4. CLARITY (Spectral Flatness) ---
-        flatness = librosa.feature.spectral_flatness(y=y)
-        avg_flatness = np.mean(flatness)
-
-        # Return everything needed for penalties
+        # Return everything to main.py
         return {
             "duration": total_duration,
-            "syllable_count": syllable_count,
             "pace": pace,
             "pitch_std": pitch_std,
-            "clarity": avg_flatness,
-            "speaking_ratio": speaking_ratio,
-            # This vector is what the AI model uses
-            "features_vector": [speaking_ratio, pitch_std, avg_flatness] 
+            "clarity_score": clarity_score,
+            "max_pause": max_pause,
+            "fluency_penalty": fluency_penalty,
+            # This is the vector your AI model needs: [Pace, Pitch, Silence]
+            "features_vector": [pace, pitch_std, silence_ratio] 
         }
 
     except Exception as e:
