@@ -1364,7 +1364,121 @@ body {
   gap: 15px;
   flex: 1;
 }
+/* --- INTERVIEW PAGE & QA EXTENSIONS --- */
 
+/* Ensures the QA side expands correctly with the 60/40 split */
+.qa-inner-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.qa-topic-title {
+  font-size: 1.2rem;
+  color: #00d2ff;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Transcript Container: Essential for fast/long speech */
+.transcript-container {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 18px;
+  padding: 20px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  /* Custom scrollbar for glass effect */
+}
+
+.transcript-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.transcript-container::-webkit-scrollbar-thumb {
+  background: rgba(0, 210, 255, 0.3);
+  border-radius: 10px;
+}
+
+.transcript-text {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #f1f5f9;
+  white-space: pre-wrap;
+}
+
+/* MIC BUTTON STYLES */
+.qa-controls {
+  margin-top: auto;
+}
+
+.mic-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.mic-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+}
+
+.mic-btn.active {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  animation: micPulse 1.5s infinite;
+}
+
+.mic-btn:disabled {
+  background: #334155;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+/* Termination Overlay inside the QA Box */
+.termination-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 28px;
+  z-index: 10;
+}
+
+.termination-overlay p {
+  color: #ff4d4d;
+  font-weight: 800;
+  font-size: 1.4rem;
+  text-transform: uppercase;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes micPulse {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
 .q-number {
   background: var(--accent-blue);
   color: #000;

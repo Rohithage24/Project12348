@@ -58,8 +58,8 @@ const History = () => {
            </div>
            
            <div className="dashboard-stat" style={{borderLeft: '2px solid var(--accent-purple)'}}>
-             <h3>{accuracy}%</h3>
-             <p>Accuracy</p>
+             <h3>{data.score}%</h3>
+             <p>score</p>
            </div>
 
            <div className="dashboard-stat" style={{borderLeft: '2px solid #4ade80'}}>
@@ -113,7 +113,7 @@ const History = () => {
                       </div>
                     </div>
                     <div className="mini-metrics">
-                       <span>Accuracy: <b>{q.accuracy}%</b></span>
+                       <span>Accuracy: <b>{q.score}%</b></span>
                        <span>Confidence: <b>{q.ConfidenceScore}%</b></span>
                     </div>
                   </div>
