@@ -258,3 +258,260 @@ Resets the user's password after successful OTP verification.
 
 This project is for learning and development purposes.
 
+## 5 Topic All Api
+### 1 Add Topic
+#### 📍 Endpoint
+```
+Post api/topic/topicAdd 
+```
+#### 📝 Description
+    - TO add Topic use this api
+####  Request Body
+JSON
+```
+{
+
+
+
+}
+```
+
+### 2 All topic
+#### 📍 Endpoint
+
+```
+GET  api/topic/topicget
+```
+#### 📝 Description
+
+   - To get all Topic use this api
+### 3 one Topic
+#### 📍 Endpoint
+
+```
+GET  api/topic/topicone/:id
+```
+#### 📝 Description
+
+
+   - To get one Topic use this api
+
+
+## 6 All Question Activity
+### 1. GET the Question Array
+
+#### 📍 Endpoint
+
+```
+GET /api/question/questiona/:topic
+```
+
+#### 📝 Description
+
+Now this api through use get Question Array to frented
+
+#### 📤 Response
+
+```json
+{
+  Data In json
+}
+```
+
+---
+
+### 2. Insert Question in Dataset
+
+#### 📍 Endpoint
+
+```
+POST /api/question/postQuestion
+```
+
+#### 📝 Description
+
+To Insert Question in dataset 
+
+#### 📥 Request Body
+
+```json
+{
+  "difficulty": "easy",
+    "questionText": "What are components?",
+    "correctAnswer": "Components are reusable pieces of UI in React.",
+    "keyConcepts": ["components", "reusable", "UI"],
+    "keywords": ["components", "ui"]
+
+}
+```
+
+#### 📤 Response
+
+```json
+{
+   "message": "Questions inserted successfully",
+}
+```
+
+---
+
+## 7 . Test Record
+### 4.3️⃣ Reset Password
+
+#### 📍 Endpoint
+
+```
+POST /api/record/restepass
+```
+
+#### 📝 Description
+
+Resets the user's password after successful OTP verification.
+
+#### 📥 Request Body
+
+```json
+{
+  "gmail": "aniruddha.saraf@example.com",
+  "password": "SecurePass@456dgfybd",
+  "Repassword": "SecurePass@456dgfybd"
+}
+```
+
+#### 📤 Response
+
+```json
+{
+  "message": "Password reset successfully"
+}
+```
+
+---
+
+### 4.3️⃣ Reset Password
+
+#### 📍 Endpoint
+
+```
+POST /api/user/restepass
+```
+
+#### 📝 Description
+
+Resets the user's password after successful OTP verification.
+
+#### 📥 Request Body
+
+```json
+{
+  "gmail": "aniruddha.saraf@example.com",
+  "password": "SecurePass@456dgfybd",
+  "Repassword": "SecurePass@456dgfybd"
+}
+```
+
+#### 📤 Response
+
+```json
+{
+  "message": "Password reset successfully"
+}
+```
+
+---
+
+### 4.3️⃣ Reset Password
+
+#### 📍 Endpoint
+
+```
+POST /api/user/restepass
+```
+
+#### 📝 Description
+
+Resets the user's password after successful OTP verification.
+
+#### 📥 Request Body
+
+```json
+{
+  "gmail": "aniruddha.saraf@example.com",
+  "password": "SecurePass@456dgfybd",
+  "Repassword": "SecurePass@456dgfybd"
+}
+```
+
+#### 📤 Response
+
+```json
+{
+  "message": "Password reset successfully"
+}
+```
+
+---
+
+### 4.3️⃣ Reset Password
+
+#### 📍 Endpoint
+
+```
+POST /api/user/restepass
+```
+
+#### 📝 Description
+
+Resets the user's password after successful OTP verification.
+
+#### 📥 Request Body
+
+```json
+{
+  "gmail": "aniruddha.saraf@example.com",
+  "password": "SecurePass@456dgfybd",
+  "Repassword": "SecurePass@456dgfybd"
+}
+```
+
+#### 📤 Response
+
+```json
+{
+  "message": "Password reset successfully"
+}
+```
+
+---
+
+### 4.3️⃣ Reset Password
+
+#### 📍 Endpoint
+
+```
+POST /api/user/restepass
+```
+
+#### 📝 Description
+
+Resets the user's password after successful OTP verification.
+
+#### 📥 Request Body
+
+```json
+{
+  "gmail": "aniruddha.saraf@example.com",
+  "password": "SecurePass@456dgfybd",
+  "Repassword": "SecurePass@456dgfybd"
+}
+```
+
+#### 📤 Response
+
+```json
+{
+  "message": "Password reset successfully"
+}
+```
+
+---

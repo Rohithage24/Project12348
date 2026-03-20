@@ -4,12 +4,12 @@ import {
   verifyOTP,
   addUser,
   signup
-} from "../controllers/UserCon.js";
+} from "../controllers/User.controller.js";
 
 import authMiddleware from '../middlewares/authMiddleware.js'
 
 
-import {sendOTPFor , verifyOTPFor , passwordForget} from "../controllers/ForgotPass.js"
+import {sendOTPFor , verifyOTPFor , passwordForget} from "../controllers/ForgotPass.controller.js"
 const router = express.Router();
 
 router.post("/send-otp", sendOTP);

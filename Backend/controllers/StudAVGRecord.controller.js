@@ -1,3 +1,4 @@
+import mongoose from 'mongoose'
 import AvgrecordModel from '../model/StudentAvgrecord.js'
 import userModel from '../model/user.js'
 
@@ -38,22 +39,29 @@ export const getAllAvgRecordStudent = async (req, res) => {
   console.log('Enter 2')
 
   try {
+    // const records = await userModel.find({
+    //   gmail: { $regex: '@sipnaengg\\.ac\\.in$', $options: 'i' }
+    // })
+
     const records = await userModel.find({
-      gmail: { $regex: '@sipnaengg\\.ac\\.in$', $options: 'i' }
+      Batch: 'A2'
     })
 
     const result = await Promise.all(
       records.map(async rec => {
-        const avg = await AvgrecordModel.findOne({ userId: rec._id })
+        const avg = await AvgrecordModel.findOne({
+          userId: rec._id
+        })
 
         return {
           userId: rec._id,
-          name: rec?.Name || null,
-          mobile: rec?.mobile || null,
-          score: avg?.score || 0,
-          accuracy: avg?.accuracy || 0,
-          emotion: avg?.emotion || 0,
-          VoiceConfindance: avg?.VoiceConfindance || 0
+          name: rec?.Name ?? null,
+          mobile: rec?.mobile ?? null,
+          score: avg?.score ?? 0,
+          accuracy: avg?.accuracy ?? 0,
+          emotion: avg?.emotion ?? 0,
+          VoiceConfindance: avg?.VoiceConfindance ?? 0,
+          Batch: avg?.Batch ?? null
         }
       })
     )
@@ -66,5 +74,23 @@ export const getAllAvgRecordStudent = async (req, res) => {
   } catch (error) {
     console.error('Fetch Error:', error)
     res.status(500).json({ message: 'Server error' })
+  }
+}
+
+export const deleteBatch = async (req, res) => {
+  try {
+    const result = await userModel.deleteMany({
+      Batch: 'A1'
+    })
+
+    res.status(200).json({
+      success: true,
+      deletedCount: result.deletedCount
+    })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({
+      message: 'Server Error'
+    })
   }
 }

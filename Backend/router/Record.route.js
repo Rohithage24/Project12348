@@ -1,5 +1,5 @@
 import express from "express";
-import Record from '../controllers/Record.js'
+import Record from '../controllers/Record.controller.js'
 const router = express.Router();
 
 router.post('/audio-text', Record.QueAns)

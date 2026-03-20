@@ -5,20 +5,20 @@ import cors from "cors";
 import http from "http";
 
 // Routers
-import userRouter from "./router/UserContral.js";
-import TopicControl from "./router/TopicControl.js";
-import chatRouter from "./router/chatRouter.js";
-import RecordRouter from "./router/RecordRouter.js";
-import QuestionRou from "./router/QuestionsRouter.js";
+import userRouter from "./router/User.route.js";
+import TopicControl from "./router/Topic.route.js";
+import chatRouter from "./router/chat.route.js";
+import RecordRouter from "./router/Record.route.js";
+import QuestionRou from "./router/Questions.route.js";
 import  StudAvgRec from "./router/StudAvgRec.route.js"
-import { getImage , calEmo} from "./controllers/Emotion.js";
+import { getImage , calEmo} from "./controllers/Emotion.controller.js";
 
 
 // Middleware
 import authMiddleware from "./middlewares/authMiddleware.js";
 
 // Controllers
-import { logout } from "./controllers/logout.js";
+import { logout } from "./controllers/logout.controller.js";
 
 dotenv.config();
 

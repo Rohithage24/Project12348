@@ -1,5 +1,5 @@
 import express from "express";
-import TopicCon from "../controllers/TopicCon.js";
+import TopicCon from "../controllers/Topic.controller.js";
 
 const router = express.Router();
 
