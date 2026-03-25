@@ -116,7 +116,7 @@ const SignupForm = ({ onClose, onBack }) => {
         `${process.env.REACT_APP_BACKEND}/user/register`,
         {
           method: "POST",
-          credentials: "include",
+           credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             Name: formData.name,

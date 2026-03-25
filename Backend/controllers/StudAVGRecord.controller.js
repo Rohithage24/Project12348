@@ -44,7 +44,11 @@ export const getAllAvgRecordStudent = async (req, res) => {
     // })
 
     const records = await userModel.find({
+<<<<<<< HEAD:Backend/controllers/StudAVGRecord.controller.js
       Batch: 'A2'
+=======
+      Batch: "A1"
+>>>>>>> 84bbeb6ef00270a5a39ad9bd05f8ed0d613a42bd:Backend/controllers/StudAVGRecord.js
     })
 
     const result = await Promise.all(

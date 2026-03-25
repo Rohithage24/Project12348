@@ -14,7 +14,8 @@ const client = twilio(
 export const sendOTP = async (req, res) => {
   try {
     const { mobile } = req.body;
-
+    console.log(mobile);
+    
     if (!mobile) {
       return res.status(400).json({ message: "Mobile number required" });
     }
