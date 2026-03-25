@@ -38,8 +38,12 @@ export const getAllAvgRecordStudent = async (req, res) => {
   console.log('Enter 2')
 
   try {
+    // const records = await userModel.find({
+    //   gmail: { $regex: '@sipnaengg\\.ac\\.in$', $options: 'i' }
+    // })
+
     const records = await userModel.find({
-      gmail: { $regex: '@sipnaengg\\.ac\\.in$', $options: 'i' }
+      Batch: "A1"
     })
 
     const result = await Promise.all(

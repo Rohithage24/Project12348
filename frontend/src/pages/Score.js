@@ -74,7 +74,7 @@ const Score = () => {
       ?.map(
         (q) =>
           q.efficiency ??
-          ((q.accuracy ?? 0 + (q.ConfidenceScore ?? 0)) / 2)
+          ((q.score ?? 0 + (q.ConfidenceScore ?? 0)) / 2)
       )
       .filter((v) => typeof v === "number") || [];
 
@@ -155,9 +155,9 @@ const Score = () => {
 
             <div className="score-overallBox glass-panel">
               <p className="metric-name">⚡ Response Efficiency</p>
-              <h3 className="metric-value">{overallEfficiency ?? 0}%</h3>
+              <h3 className="metric-value">{results.score ?? 0}%</h3>
               <div className="score-progressBar">
-                <div className="score-progressFill eff-fill" style={{ width: `${overallEfficiency ?? 0}%` }}></div>
+                <div className="score-progressFill eff-fill" style={{ width: `${results.score ?? 0}%` }}></div>
               </div>
               <p className="metric-remark">{efficiencyRemark}</p>
             </div>
