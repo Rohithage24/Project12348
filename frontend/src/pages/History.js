@@ -58,13 +58,10 @@ const History = () => {
            </div>
            
            <div className="dashboard-stat" style={{borderLeft: '2px solid var(--accent-purple)'}}>
-<<<<<<< HEAD
+
              <h3>{data.score}%</h3>
              <p>score</p>
-=======
-             <h3>{accuracy}%</h3>
-             <p>Score</p>
->>>>>>> 84bbeb6ef00270a5a39ad9bd05f8ed0d613a42bd
+
            </div>
 
            <div className="dashboard-stat" style={{borderLeft: '2px solid #4ade80'}}>
