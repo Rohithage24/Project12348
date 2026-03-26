@@ -185,7 +185,9 @@ const record = async (req, res) => {
  * Get all tests for a user
  */
 const getUserTest = async (req, res) => {
-  const userId = req.params.id
+  const userId = req.user._id
+  console.log(userId);
+  
 
   try {
     const tests = await TestRecord.find({ userId }).sort({ date: -1 })
@@ -220,7 +222,7 @@ const getTest = async (req, res) => {
 }
 
 const allTextDataUser = async (req, res) => {
-  const userId = req.params.id
+  const userId = req.user._id
   try {
     const data = await TestRecord.findAll({
       where: { userId: userId }

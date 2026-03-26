@@ -7,17 +7,25 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = "7d"; // token validity
 
 // Create a JWT token
-const createToken = (payload) => {
+const createToken = (res,payload) => {
   try {
     const token = jwt.sign(
       {
+        id:payload._id,
         Name: payload.name,
         gmail: payload.gmail,
         mobile: payload.mobile
       },
       JWT_SECRET,
-      // { expiresIn: JWT_EXPIRES_IN }
+      { expiresIn: JWT_EXPIRES_IN }
     );
+
+    res.cookie("token", token, {
+    httpOnly: true,       // JS cannot access this cookie (XSS safe)
+    secure: process.env.NODE_ENV === "production", // HTTPS only in prod
+    sameSite: "strict",   // CSRF protection
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+  });
     return token;
   } catch (error) {
     console.error("Error creating JWT:", error);

@@ -74,7 +74,7 @@ const Score = () => {
       ?.map(
         (q) =>
           q.efficiency ??
-          ((q.score ?? 0 + (q.ConfidenceScore ?? 0)) / 2)
+          ((q.accuracy ?? 0 + (q.ConfidenceScore ?? 0)) / 2)
       )
       .filter((v) => typeof v === "number") || [];
 

@@ -3,6 +3,10 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import http from "http";
+// import morgan from "morgan";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+
 
 // Routers
 import userRouter from "./router/User.route.js";
@@ -30,8 +34,20 @@ app.use(cors({
   origin: ["http://localhost:3000", "http://localhost:3001"],
   credentials: true
 }));
+app.use(helmet());
+
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100 // limit each IP
+}));
 app.use(cookieParser());
 app.use(express.json());
+// app.use(morgan("combined"));
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send("Something broke!");
+});
 
 /*  PUBLIC ROUTES (NO TOKEN REQUIRED) */
 app.use("/api/user", userRouter);

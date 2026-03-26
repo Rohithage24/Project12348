@@ -4,9 +4,9 @@ dotenv.config();
 
 const mongodb = async () => {
     try {
-        // console.log(process.env.MONGODB);
+        console.log(process.env.MONGODB);
         
-        await mongoose.connect(`${process.env.MONGODB}`);
+        await mongoose.connect(`${process.env.MONGODB}`,{maxPoolSize: 10,});
         console.log("MongoDB connected.");
     } catch (error) {
         console.error("MongoDB connection failed:", error);
@@ -15,13 +15,3 @@ const mongodb = async () => {
 
 export default mongodb
 
-// const mongoos = require("mongoose");
-
-// exports.mongodb = async () => {
-//  async function main() {
-//   await mongoose.connect('mongodb://127.0.0.1:27017/Interview');
-
-//   console.log("Mongodb Connected.");
-  
-// }
-// }

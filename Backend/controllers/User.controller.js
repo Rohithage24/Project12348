@@ -14,8 +14,7 @@ const client = twilio(
 export const sendOTP = async (req, res) => {
   try {
     const { mobile } = req.body;
-    console.log(mobile);
-    
+
     if (!mobile) {
       return res.status(400).json({ message: "Mobile number required" });
     }
@@ -79,7 +78,7 @@ export const verifyOTP = async (req, res) => {
     user.otpExpiresAt = null;
     await user.save();
 
-    const token = auth.createToken(user);
+    const token = auth.createToken(res,user);
 
     res.status(200).json({
       message: "OTP verified successfully",
@@ -139,7 +138,7 @@ export const signup = async (req, res) => {
       return res.status(401).json({ message: "Invalid password" });
     }
 
-    const token = auth.createToken(user);
+    const token = auth.createToken(res,user);
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -149,8 +148,12 @@ export const signup = async (req, res) => {
 
     res.status(200).json({
       message: "Login successful",
-      token,
-      user
+      user: {
+        id:user._id,
+        Name: user.Name,
+        gmail: user.gmail,
+        mobile: user.mobile
+      }
     });
   } catch (error) {
     res.status(500).json({ message: "Login failed" });

@@ -13,7 +13,7 @@ const Profile = () => {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await fetch(`${process.env.REACT_APP_BACKEND}/record/textRecords/${auth.user._id}`, {
+        const res = await fetch(`${process.env.REACT_APP_BACKEND}/record/textRecords`, {
           method: 'GET',
           credentials: 'include',
           headers: {
@@ -26,7 +26,7 @@ const Profile = () => {
         console.error("Failed to fetch history:", err);
       }
     };
-    if (auth?.user?._id) fetchHistory();
+    if (auth?.user) fetchHistory();
   }, [auth.user]);
 
   // --- AGGREGATION LOGIC ---

@@ -515,3 +515,11 @@ Resets the user's password after successful OTP verification.
 ```
 
 ---
+
+
+
+
+
+pm2 start index.js -i max
+
+pm2 stop index.js

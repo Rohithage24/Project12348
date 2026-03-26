@@ -26,9 +26,9 @@ const LoginForm = ({ onClose }) => {
 
       const data = await res.json();
 
-      if (res.ok && data.user && data.token) {
-        setAuth({ ...auth, user: data.user, token: data.token });
-        localStorage.setItem("auth", JSON.stringify({ user: data.user, token: data.token }));
+      if (res.ok && data.user ) {
+        setAuth({ ...auth, user: data.user });
+        localStorage.setItem("auth", JSON.stringify({ user: data.user }));
         setMessage(data.message || "Login successful");
         onClose && onClose();
         navigate("/");

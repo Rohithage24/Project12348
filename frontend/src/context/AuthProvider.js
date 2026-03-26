@@ -7,7 +7,6 @@ const AuthContext = createContext();
 const AuthProvider = ({ children }) => {
     const [auth, setAuth] = useState({
         user: null,
-        token: ""
     });
 
     useEffect(()=>{
@@ -19,7 +18,6 @@ const AuthProvider = ({ children }) => {
             setAuth({
                 ...auth,
                 user:userDate.user,
-                token: userDate.token
             })
         }
         //eslint-disable-next-line

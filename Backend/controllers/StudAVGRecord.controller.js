@@ -44,7 +44,7 @@ export const getAllAvgRecordStudent = async (req, res) => {
     // })
 
     const records = await userModel.find({
-      Batch:"A1"
+      Batch: 'A2'
     })
 
     const result = await Promise.all(

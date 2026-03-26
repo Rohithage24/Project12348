@@ -38,7 +38,7 @@ const MidPage = () => {
     const fetchHistory = async () => {
       try {
         const res = await fetch(
-          `${process.env.REACT_APP_BACKEND}/record/textRecords/${auth.user._id}`,
+          `${process.env.REACT_APP_BACKEND}/record/textRecords`,
           {
             method: 'GET',
             credentials: 'include',
@@ -51,7 +51,7 @@ const MidPage = () => {
         console.error(err)
       }
     }
-    if (auth.user?._id) fetchHistory()
+    if (auth?.user) fetchHistory()
   }, [auth.user])
 
   const handleClick = () => navigate(`/inter/${id}`)
