@@ -5,7 +5,6 @@ import User from "../model/user.js";
 
 const authMiddleware = async (req, res, next) => {
   try {
-    console.log(req.cookies.token);
     
     // 1. Read token from cookie (or fallback to Bearer header)
     const token =
@@ -38,7 +37,7 @@ const authMiddleware = async (req, res, next) => {
 
     // 3. Find user in DB (exclude password)
     const user = await User.findById(decoded.id).select("-password");
-    console.log(user);
+    // console.log(user);
     
     if (!user) {
       return res.status(401).json({

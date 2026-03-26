@@ -191,7 +191,7 @@ const getUserTest = async (req, res) => {
 
   try {
     const tests = await TestRecord.find({ userId }).sort({ date: -1 })
-    console.log(tests)
+    // console.log(tests)
 
     return res.status(200).json(tests)
   } catch (err) {
