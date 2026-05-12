@@ -61,6 +61,8 @@ import History from "./pages/History";
 import CosmicBackground from './components/CosmicBackground';
 
 const App = () => {
+  console.log(process.env.REACT_APP_BACKEND);
+  
   return (
     <div style={{ position: 'relative', minHeight: '100vh' }}>
       
