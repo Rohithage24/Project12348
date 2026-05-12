@@ -5,7 +5,7 @@ import cors from "cors";
 import http from "http";
 // import morgan from "morgan";
 import helmet from "helmet";
-import rateLimit from "express-rate-limit";
+// import rateLimit from "express-rate-limit";
 
 
 // Routers
@@ -31,15 +31,15 @@ const server = http.createServer(app);
 
 // Middlewares
 app.use(cors({
-  origin: ["http://localhost:3000", "http://localhost:3001"],
+  origin: ["https://mockprep-8ghv.onrender.com","http://localhost:3000", "http://localhost:3001"],
   credentials: true
 }));
 app.use(helmet());
 
-app.use(rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100 // limit each IP
-}));
+// app.use(rateLimit({
+//   windowMs: 15 * 60 * 1000,
+//   max: 100 // limit each IP
+// }));
 app.use(cookieParser());
 app.use(express.json());
 // app.use(morgan("combined"));
