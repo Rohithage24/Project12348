@@ -20,12 +20,12 @@ const createToken = (res,payload) => {
       { expiresIn: JWT_EXPIRES_IN }
     );
 
-    res.cookie("token", token, {
-    httpOnly: true,       // JS cannot access this cookie (XSS safe)
-    secure: process.env.NODE_ENV === "production", // HTTPS only in prod
-    sameSite: "strict",   // CSRF protection
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
-  });
+  res.cookie("token", token, {
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+});
     return token;
   } catch (error) {
     console.error("Error creating JWT:", error);

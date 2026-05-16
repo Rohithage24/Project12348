@@ -3,9 +3,9 @@ import React from 'react'
 const Loading = () => {
   return (
     <div>
-      <div class='d-flex justify-content-center'>
-          <div class='spinner-border' role='status'>
-            <span class='sr-only'></span>
+      <div className='d-flex justify-content-center'>
+          <div className='spinner-border' role='status'>
+            <span className='sr-only'></span>
           </div>
         </div>
     </div>

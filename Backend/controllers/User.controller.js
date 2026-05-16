@@ -1,39 +1,38 @@
-import userModel from "../model/user.js";
-import dotenv from "dotenv";
-import twilio from "twilio";
-import auth from "../Auth/authUser.js";
+import userModel from '../model/user.js'
+import dotenv from 'dotenv'
+import twilio from 'twilio'
+import auth from '../Auth/authUser.js'
 
-dotenv.config();
+dotenv.config()
 
 const client = twilio(
   process.env.TWILIO_ACCOUNT_SID,
   process.env.TWILIO_AUTH_TOKEN
-);
-
+)
 
 export const sendOTP = async (req, res) => {
   try {
-    const { mobile } = req.body;
+    const { mobile } = req.body
 
     if (!mobile) {
-      return res.status(400).json({ message: "Mobile number required" });
+      return res.status(400).json({ message: 'Mobile number required' })
     }
 
-    const existingUser = await userModel.findOne({ mobile });
+    const existingUser = await userModel.findOne({ mobile })
     if (existingUser && existingUser.isVerified) {
-      return res.status(400).json({ message: "Number already registered" });
+      return res.status(400).json({ message: 'Number already registered' })
     }
 
-    const otp = Math.floor(1000 + Math.random() * 9000).toString();
-    const expiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+    const otp = Math.floor(1000 + Math.random() * 9000).toString()
+    const expiry = new Date(Date.now() + 15 * 60 * 1000) // 15 minutes
 
     await userModel.findOneAndUpdate(
       { mobile },
       { otp, otpExpiresAt: expiry },
       { upsert: true, new: true }
-    );
+    )
 
-console.log(process.env.TWILIO_MESSAGING_SERVICE_SID);
+    console.log(process.env.TWILIO_MESSAGING_SERVICE_SID)
 
     //  await client.messages.create({
     //   to: mobile,
@@ -41,145 +40,123 @@ console.log(process.env.TWILIO_MESSAGING_SERVICE_SID);
     //   body: `Your OTP is ${otp}`,
     // });
 
-
     // await client.messages.create({
     //   body: `Your OTP is ${otp}`,
     //   from: process.env.TWILIO_PHONE_NUMBER,
     //   to: `+91${mobile}`
     // });
 
-    res.status(200).json({ message: "OTP sent successfully" , otp : otp });
+    res.status(200).json({ message: 'OTP sent successfully', otp: otp })
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "OTP sending failed" });
+    console.error(error)
+    res.status(500).json({ message: 'OTP sending failed' })
   }
-};
+}
 
 export const verifyOTP = async (req, res) => {
   try {
-    const { mobile, otp } = req.body;
+    const { mobile, otp } = req.body
 
-    const user = await userModel.findOne({ mobile });
+    const user = await userModel.findOne({ mobile })
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: 'User not found' })
     }
 
     if (user.otp !== otp) {
-      return res.status(401).json({ message: "Invalid OTP" });
+      return res.status(401).json({ message: 'Invalid OTP' })
     }
 
     if (user.otpExpiresAt < new Date()) {
-      return res.status(401).json({ message: "OTP expired" });
+      return res.status(401).json({ message: 'OTP expired' })
     }
 
-    user.isVerified = true;
-    user.otp = null;
-    user.otpExpiresAt = null;
-    await user.save();
+    user.isVerified = true
+    user.otp = null
+    user.otpExpiresAt = null
+    await user.save()
 
-    const token = auth.createToken(res,user);
+    const token = auth.createToken(res, user)
 
     res.status(200).json({
-      message: "OTP verified successfully",
+      message: 'OTP verified successfully',
       token,
       user
-    });
+    })
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "OTP verification failed" });
+    console.error(error)
+    res.status(500).json({ message: 'OTP verification failed' })
   }
-};
-
+}
 
 export const addUser = async (req, res) => {
   try {
-    const { Name, gmail, password, mobile, address } = req.body;
+    const { Name, gmail, password, mobile, address } = req.body
 
-    const user = await userModel.findOne({ mobile });
+    const user = await userModel.findOne({ mobile })
 
     if (!user || !user.isVerified) {
-      return res.status(403).json({ message: "Mobile not verified" });
+      return res.status(403).json({ message: 'Mobile not verified' })
     }
 
-    const gmailExists = await userModel.findOne({ gmail });
+    const gmailExists = await userModel.findOne({ gmail })
     if (gmailExists) {
-      return res.status(400).json({ message: "Gmail already exists" });
+      return res.status(400).json({ message: 'Gmail already exists' })
     }
 
-    user.Name = Name;
-    user.gmail = gmail;
-    user.password = password;
-    user.address = address;
+    user.Name = Name
+    user.gmail = gmail
+    user.password = password
+    user.address = address
 
-    await user.save();
+    await user.save()
 
     res.status(201).json({
-      message: "User registered successfully",
+      message: 'User registered successfully',
       user
-    });
+    })
   } catch (error) {
-    res.status(500).json({ message: "Registration failed" });
+    res.status(500).json({ message: 'Registration failed' })
   }
-};
-
-
+}
 
 export const signup = async (req, res) => {
   try {
-    const { gmail, password } = req.body;
+    const { gmail, password } = req.body
 
-    const user = await userModel.findOne({ gmail });
+    const user = await userModel.findOne({ gmail })
+    console.log(user);
+    
     if (!user) {
-      return res.status(404).json({ message: "User not registered" });
+      return res.status(404).json({ message: 'User not registered' })
     }
 
     if (user.password !== password) {
-      return res.status(401).json({ message: "Invalid password" });
+      return res.status(401).json({ message: 'Invalid password' })
     }
 
-    const token = auth.createToken(res,user);
+    const token = auth.createToken(res, user)
 
-    res.cookie("token", token, {
+    res.cookie('token', token, {
       httpOnly: true,
-      sameSite: "lax",
+      secure: true,
+      sameSite: 'none',
       maxAge: 7 * 24 * 60 * 60 * 1000
-    });
+    })
 
     res.status(200).json({
-      message: "Login successful",
+      message: 'Login successful',
       user: {
-        id:user._id,
+        id: user._id,
         Name: user.Name,
         gmail: user.gmail,
         mobile: user.mobile
       }
-    });
+    })
   } catch (error) {
-    res.status(500).json({ message: "Login failed" });
+    res.status(500).json({ message: 'Login failed' })
   }
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}
 
 // import userModel from "../model/user.js";
 // import jwt from "jsonwebtoken";
@@ -193,9 +170,7 @@ export const signup = async (req, res) => {
 
 //     const Number = req.body;
 
-
 //   const otp = Math.floor(1000 + Math.random() * 9000).toString();
-
 
 //      const existingUser = await userModel.findOne({ mobile });
 //     if (existingUser) {
@@ -207,21 +182,17 @@ export const signup = async (req, res) => {
 //       otp,
 //     });
 
-
-    
 //   } catch (error) {
 //     console.error(error);
 //     return res.status(500).json({ message:"Internal Server Error"});
 //   }
 // }
 
-
-
 // const addUser = async (req, res) => {
 //   try {
 //     const { Name, gmail, password, mobile, address } = req.body;
 //     //  console.log(req.body);
-     
+
 //     const existingUser = await userModel.findOne({ gmail });
 //     if (existingUser) {
 //       return res.status(400).json( {message : "Gmail already exists"});
@@ -234,8 +205,6 @@ export const signup = async (req, res) => {
 //       mobile,
 //       address,
 //     });
-
-    
 
 //      const token = auth.createToken()
 //     //  jwt.sign(
@@ -265,7 +234,7 @@ export const signup = async (req, res) => {
 //   try {
 //     const { gmail, password } = req.body;
 //     // console.log(req.body);
-    
+
 //     const existUser = await userModel.findOne({ gmail });
 
 //     if (existUser) {
@@ -301,8 +270,6 @@ export const signup = async (req, res) => {
 //     return res.status(500).json(`Error: ${error}`);
 //   }
 // };
-
-
 
 // export default {
 //   addUser,

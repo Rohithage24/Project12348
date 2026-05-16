@@ -12,7 +12,6 @@ const testSessions = {}
 
 export const QueAns = async (req, res) => {
   const {
-    userId,
     question,
     answer,
     confidenceScore,
@@ -22,7 +21,9 @@ export const QueAns = async (req, res) => {
     correctAnswer
   } = req.body
 
-  // console.log(allConfindance);
+  // console.log(req.body);
+  const userId = req.user._id;
+  // console.log(userId);
 
   if (!userId || !question || !answer) {
     return res.status(400).json({
@@ -100,8 +101,11 @@ export const QueAns = async (req, res) => {
  */
 
 const record = async (req, res) => {
-  const { userId, headline, dataEmo } = req.body
-  console.log('EMOTION:', dataEmo)
+
+   const {  headline, dataEmo } = req.body
+  // console.log('EMOTION:', dataEmo)
+  const userId = req.user._id;
+  console.log(userId);
 
   if (!userId || !headline) {
     return res.status(400).json({ message: 'Missing userId or headline' })
